@@ -1,12 +1,11 @@
-import asyncio
 import os
 import sys
 
 from PyQt5.QtCore import QCoreApplication, QPropertyAnimation, QRect, Qt
 from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QGraphicsView,
-                             QGridLayout, QLabel, QLCDNumber, QMessageBox,
-                             QPushButton, QWidget)
+from PyQt5.QtWidgets import (QDesktopWidget, QGraphicsView, QGridLayout,
+                             QLabel, QLCDNumber, QMessageBox, QPushButton,
+                             QWidget)
 
 from dispatch import Dispatch
 
@@ -298,10 +297,3 @@ class Ui(QWidget):
     def mouseReleaseEvent(self, QMouseEvent):
         self.m_flag=False
         self.setCursor(QCursor(Qt.ArrowCursor))
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ui = Ui()
-    ui.show()
-    sys.exit(app.exec_())
