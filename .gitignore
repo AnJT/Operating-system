@@ -1,0 +1,5 @@
+*LICENSE
+*.log
+*__pycache__
+*.idea
+test
