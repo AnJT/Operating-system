@@ -35,19 +35,19 @@ class Ui(QWidget):
         self.elev_floor = [1] * 5  # 电梯所在的楼层
         self.door_state = [CLOSE] * 5  # 电梯门状态（开/关）
 
-        self.anim_state = [NOPE] * 5
-        self.floor_label = []
-        self.upbtn = []
-        self.downbtn = []
-        self.label = []
-        self.elev_front = []  # 电梯
-        self.elev_back = []
-        self.elev_anim = []
+        self.anim_state = [NOPE] * 5 # 电梯门动画状态
+        self.floor_label = [] # 外电梯label
+        self.upbtn = [] # 外电梯上升按钮
+        self.downbtn = [] # 外电梯下降按钮
+        self.label = [] # 电梯序号label
+        self.elev_front = [] # 电梯前门
+        self.elev_back = [] # 电梯门背景
+        self.elev_anim = [] # 电梯门动画
         self.led = []  # LED灯
         self.warnbtn = []  # 报警器
         self.grid_layout_widget = []  # 楼层按键
         self.grid_layout = []
-        self.openbtn = []  # 开关
+        self.openbtn = []  # 电梯门开关
         self.closebtn = []
 
         self.initUI() 
@@ -60,21 +60,16 @@ class Ui(QWidget):
         self.setWindowFlag(Qt.FramelessWindowHint) # 设置无边框
         self.setWindowOpacity(0.9)  # 设置窗口透明度
 
-        # 关闭和缩小
+        # 关闭和缩小按钮
         self.left_close = QPushButton(self)  # 关闭按钮
-        self.left_visit = QPushButton(self)  # 空白按钮
         self.left_mini = QPushButton(self)  # 最小化按钮
         self.left_close.setFixedSize(20, 20)  # 设置关闭按钮的大小
-        self.left_visit.setFixedSize(20, 20)  # 设置按钮大小
         self.left_mini.setFixedSize(20, 20)  # 设置最小化按钮大小
         self.left_close.setStyleSheet(
             '''QPushButton{background:#F76677;border-radius:10px;}QPushButton:hover{background:red;}''')
-        self.left_visit.setStyleSheet(
-            '''QPushButton{background:#F7D674;border-radius:10px;}QPushButton:hover{background:yellow;}''')
         self.left_mini.setStyleSheet(
             '''QPushButton{background:#6DDF6D;border-radius:10px;}QPushButton:hover{background:green;}''')
         self.left_close.move(20, 20)
-        self.left_visit.move(50, 20)
         self.left_mini.move(80, 20)
         self.left_close.clicked.connect(QCoreApplication.instance().quit)
         self.left_mini.clicked.connect(self.showMinimized)
@@ -82,36 +77,30 @@ class Ui(QWidget):
         # 画电梯和电梯动画
         elev_pos = [30, 280, 530, 780, 1030]
         for i in range(len(elev_pos)):
+            # 电梯门背景
             self.elev_back.append(QGraphicsView(self))
             self.elev_back[i].setGeometry(elev_pos[i], 490, 131, 161)
             self.elev_back[i].setStyleSheet("background-color:gray")
             self.elev_back[i].setObjectName("elev_back" + str(i))
 
-            # 电梯门
+            # 电梯门和电梯门动画
             self.elev_front.append(QGraphicsView(self))
             self.elev_front[2 * i].setGeometry(elev_pos[i], 490, 64, 161)
             self.elev_front[2 * i].setStyleSheet("background-color:white")
             self.elev_front[2 * i].setObjectName("elev_front" + str(2 * i))
-            self.elev_anim.append(QPropertyAnimation(
-                self.elev_front[i * 2], b"geometry"))
+            self.elev_anim.append(QPropertyAnimation(self.elev_front[i * 2], b"geometry"))
             self.elev_anim[2 * i].setDuration(1000)
-            self.elev_anim[2 *
-                           i].setStartValue(QRect(elev_pos[i], 490, 64, 161))
+            self.elev_anim[2 * i].setStartValue(QRect(elev_pos[i], 490, 64, 161))
             self.elev_anim[2 * i].setEndValue(QRect(elev_pos[i], 490, 8, 161))
 
             self.elev_front.append(QGraphicsView(self))
-            self.elev_front[2 * i +
-                            1].setGeometry(elev_pos[i] + 67, 490, 64, 161)
+            self.elev_front[2 * i + 1].setGeometry(elev_pos[i] + 67, 490, 64, 161)
             self.elev_front[2 * i + 1].setStyleSheet("background-color:white")
-            self.elev_front[2 * i +
-                            1].setObjectName("elev_front" + str(2 * i + 1))
-            self.elev_anim.append(QPropertyAnimation(
-                self.elev_front[i * 2 + 1], b"geometry"))
+            self.elev_front[2 * i + 1].setObjectName("elev_front" + str(2 * i + 1))
+            self.elev_anim.append(QPropertyAnimation(self.elev_front[i * 2 + 1], b"geometry"))
             self.elev_anim[2 * i + 1].setDuration(1000)
-            self.elev_anim[2 * i +
-                           1].setStartValue(QRect(elev_pos[i] + 67, 490, 64, 161))
-            self.elev_anim[2 * i +
-                           1].setEndValue(QRect(elev_pos[i] + 123, 490, 8, 161))
+            self.elev_anim[2 * i + 1].setStartValue(QRect(elev_pos[i] + 67, 490, 64, 161))
+            self.elev_anim[2 * i + 1].setEndValue(QRect(elev_pos[i] + 123, 490, 8, 161))
 
         # 电梯文字
         label_pos = [75, 325, 575, 835, 1075]
@@ -162,8 +151,9 @@ class Ui(QWidget):
                 button.clicked.connect(self.floorbtnClick)
                 self.grid_layout[i].addWidget(button, *position)
 
-        # 上行按钮
+        # 外电梯按键
         for i in range(20):
+            # 上行按钮
             self.upbtn.append(QPushButton(self))
             self.upbtn[i].setGeometry(230 + 90*(i%10), 60 if i<10 else 90, 24, 24)
             self.upbtn[i].setStyleSheet("QPushButton{border-image: url(resources/up.png)}"
@@ -181,6 +171,7 @@ class Ui(QWidget):
             self.downbtn[i].setObjectName("downbtn " + str(i))
             self.downbtn[i].clicked.connect(self.outClick)
 
+            # 楼层label
             self.floor_label.append(
                 QLabel("0"+str(i + 1) if i < 9 else str(i+1), self))
             self.floor_label[i].setGeometry(200 + 90*(i%10), 60 if i<10 else 90, 24, 24)
@@ -188,7 +179,7 @@ class Ui(QWidget):
             self.floor_label[i].setAlignment(Qt.AlignCenter)
             self.floor_label[i].setStyleSheet("color:white")
 
-        # 开关
+        # 电梯门开关
         openbtn_pos = [190, 440, 690, 940, 1190]
         closebtn_pos = [240, 490, 740, 990, 1240]
         for i in range(len(openbtn_pos)):
@@ -231,7 +222,7 @@ class Ui(QWidget):
         print(idx, command)
         self.ctrl.doorCtrl(idx, command)
 
-    # 楼层按键槽函数
+    # 电梯内按键槽函数
     def floorbtnClick(self):
         sender = self.sender()
         print(sender.objectName() + ' was pressed')
@@ -243,13 +234,13 @@ class Ui(QWidget):
         sender.setEnabled(False)
         self.ctrl.elevMove(elev_idx, floor_idx)
 
+    # 外电梯按钮槽函数
     def outClick(self):
         sender = self.sender()
         print(sender.objectName() + ' was pressed')
 
         floor = [int(s) for s in sender.objectName().split() if s.isdigit()]
         floor = floor[0]
-        print("floor: ", floor)
         btn = sender.objectName()
         if btn[0] == 'd':
             self.downbtn[floor].setStyleSheet(
@@ -262,7 +253,7 @@ class Ui(QWidget):
             self.upbtn[floor].setEnabled(False)
 
             choice = GO_UP
-        print(floor, choice)
+        print("floor: ", floor, "command: ", choice)
         self.ctrl.outCtrl(floor + 1, choice)
 
     # 居中显示
