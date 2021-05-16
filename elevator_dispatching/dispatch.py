@@ -44,8 +44,9 @@ class Dispatch(object):
             # 如果处于动画状态，等待动画结束
             if self.elev.anim_state[i] == PE:
                 self.elev.anim_state[i] = NOPE
+                self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state.png)}")
                 continue
-            
+
             # 若消息队列不为空
             if len(self.messages[i]):
 
@@ -55,6 +56,7 @@ class Dispatch(object):
                         self.elev.door_state[i] = OPEN
                         self.openAnim(i)
                         self.elev.anim_state[i] = PE
+                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state.png)}")
 
                     if self.elev.elev_floor[i] < self.messages[i][0]:
                         self.elev.elev_state[i] = RUNNING_UP
@@ -63,7 +65,7 @@ class Dispatch(object):
                             self.closeAnim(i)
                             self.elev.anim_state[i] = PE
 
-                    elif self.elev.elev_floor[i] > self.messages[i][0]: 
+                    elif self.elev.elev_floor[i] > self.messages[i][0]:
                         self.elev.elev_state[i] = RUNNING_DOWN
                         if self.elev.door_state[i] != CLOSE:
                             self.elev.door_state[i] = CLOSE
@@ -71,6 +73,7 @@ class Dispatch(object):
                             self.elev.anim_state[i] = PE
                     else:
                         self.messages[i].pop(0)
+                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state.png)}")
 
                         floorbtn = self.elev.findChild(QPushButton,
                         "floorbtn {} {}".format(i, self.elev.elev_floor[i]))
@@ -78,6 +81,8 @@ class Dispatch(object):
                         floorbtn.setEnabled(True)
 
                         if self.state[i] == RUNNING_DOWN:
+                            self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state_down.png)}")
+
                             outbtn = self.elev.findChild(QPushButton,
                             "downbtn {}".format(self.elev.elev_floor[i] - 1))
                             outbtn.setStyleSheet("QPushButton{border-image: url(resources/down.png)}"
@@ -86,6 +91,8 @@ class Dispatch(object):
                             outbtn.setEnabled(True)
                             print("downbtn {}".format(self.elev.elev_floor[i] - 1))
                         else:
+                            self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state_up.png)}")
+                            
                             outbtn = self.elev.findChild(QPushButton,
                             "upbtn {}".format(self.elev.elev_floor[i] - 1))
                             outbtn.setStyleSheet("QPushButton{border-image: url(resources/up.png)}"
@@ -105,18 +112,22 @@ class Dispatch(object):
                         self.elev.elev_state[i] = RUNNING_UP
                         self.elev.elev_floor[i] += 1
                         self.elev.led[i].setProperty("value", self.elev.elev_floor[i])
-                    
+                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state_up.png)}")
+
                     elif self.elev.elev_floor[i] > floor: # 向下运动
                         self.elev.elev_state[i] = RUNNING_DOWN
                         self.elev.elev_floor[i] -= 1
                         self.elev.led[i].setProperty("value", self.elev.elev_floor[i])
-                    
+                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state_down.png)}")
+
                     else: # 电梯到目的地
                         self.openAnim(i)
                         self.elev.anim_state[i] = PE
                         self.elev.door_state[i] = OPEN
                         self.elev.elev_state[i] = STILL
                         self.messages[i].pop(0)
+
+                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state.png)}")
 
                         floorbtn = self.elev.findChild(QPushButton,
                         "floorbtn {} {}".format(i, self.elev.elev_floor[i]))
@@ -178,39 +189,59 @@ class Dispatch(object):
         for i in range(5):
             if self.elev.elev_enabled[i]:
                 enabled_list.append(i)
-        
+
         dist = [INF] * 5
         for idx in enabled_list:
             # 往上顺路，好耶
             if self.state[idx] == RUNNING_UP and command == GO_UP and floor >= self.elev.elev_floor[idx]:
-                dist[idx] = floor - self.elev.elev_floor[idx] + 2 * len([x for x in self.messages[idx] if x > self.elev.elev_floor[idx] and x < floor])
+                dist[idx] = floor - self.elev.elev_floor[idx] + 2 * len([x for x in self.messages[idx] if x < floor])
+           
             # 往下顺路，好耶
-            elif self.state[idx] == RUNNING_DOWN and command==GO_DOWN and floor <= self.elev.elev_floor[idx]:
-                dist[idx] = self.elev.elev_floor[idx] - floor + 2 * len([x for x in self.messages[idx] if x < self.elev.elev_floor[idx] and x > floor])
+            elif self.state[idx] == RUNNING_DOWN and command == GO_DOWN and floor <= self.elev.elev_floor[idx]:
+                dist[idx] = self.elev.elev_floor[idx] - floor + 2 * len([x for x in self.messages[idx] if x > floor])
+            
             # 电梯往上呢，但人想往下
             elif self.state[idx] == RUNNING_UP and command == GO_DOWN:
-                if self.messages_reverse[idx] != [] and max(self.messages_reverse[idx]) > max(self.elev.elev_floor[idx], floor):
-                    dist[idx] = (2 * max(max(self.messages[idx]), max(self.messages_reverse[idx])) - floor - self.elev.elev_floor[idx]) if self.messages[idx] != [] else 2 * max(self.messages_reverse[idx]) - self.elev.elev_floor[idx] - floor
-                else:
-                    dist[idx] = (2 * max(self.messages[idx]) - floor - self.elev.elev_floor[idx]) if self.messages[idx] != [] and max(self.messages[idx]) > max(self.elev.elev_floor[idx], floor) else abs(self.elev.elev_floor[idx] - floor)
-                dist[idx] += 2 * len([x for x in self.messages[idx] if x > self.elev.elev_floor[idx]]) + 2 * len([x for x in self.messages_reverse[idx] if x > floor])
+                max_floor = max(floor, self.elev.elev_floor[idx])
+                max_floor = max(max_floor, max(self.messages[idx] if self.messages[idx] != [] else [0]))
+                max_floor = max(max_floor, max(self.messages_reverse[idx] if self.messages_reverse[idx] != [] else [0]))
+                dist[idx] = 2 * max_floor - floor - self.elev.elev_floor[idx]
+
+                dist[idx] += 2 * len(self.messages[idx]) + 2 * len([x for x in self.messages_reverse[idx] if x > floor])
+            
             # 电梯往下呢，但人想网上
             elif self.state[idx] == RUNNING_DOWN and command == GO_UP:
-                if self.messages_reverse[idx] != [] and min(self.messages_reverse[idx]) < min(self.elev.elev_floor[idx], floor):
-                    dist[idx] = (floor + self.elev.elev_floor[idx] - 2 * min(min(self.messages[idx]), min(self.messages_reverse[idx]))) if self.messages[idx] != [] else self.elev.elev_floor[idx] + floor - 2 * min(self.messages_reverse[idx])
-                else:
-                    dist[idx] = (self.elev.elev_floor[idx] + floor - 2 * min(self.messages[idx])) if self.messages[idx] != [] and min(self.messages[idx]) < min(self.elev.elev_floor[idx], floor) else abs(self.elev.elev_floor[idx] - floor)
-                dist[idx] += 2 * len([x for x in self.messages[idx] if x < self.elev.elev_floor[idx]]) + 2 * len([x for x in self.messages_reverse[idx] if x < floor])
+                min_floor = min(floor, self.elev.elev_floor[idx])
+                min_floor = min(min_floor, min(self.messages[idx] if self.messages[idx] != [] else [20]))
+                min_floor = min(min_floor, min(self.messages_reverse[idx] if self.messages_reverse[idx] != [] else [20]))
+                dist[idx] = floor + self.elev.elev_floor[idx] - 2 * min_floor
+
+                dist[idx] += 2 * len(self.messages[idx]) + 2 * len([x for x in self.messages_reverse[idx] if x < floor])
+           
             # 都想往上，但不顺路
             elif self.state[idx] == RUNNING_UP and command == GO_UP and floor < self.elev.elev_floor[idx]:
-                dist[idx] = (2 * max(self.messages[idx]) - floor - self.elev.elev_floor[idx]) if self.messages[idx] != [] else self.elev.elev_floor[idx] - floor
+                max_floor = max(self.messages[idx]) if self.messages[idx] != [] else self.elev.elev_floor[idx]
+                max_floor = max(max_floor, max(self.messages_reverse[idx] if self.messages_reverse[idx] != [] else [0]))
+                min_floor = min(self.messages_other[idx]) if self.messages_other[idx] != [] else floor
+                min_floor = min(min_floor, min(self.messages_reverse[idx] if self.messages_other[idx] != [] else [20]))
+                dist[idx] = 2 * max_floor - self.elev.elev_floor[idx] + floor - 2 * min_floor
+
+                dist[idx] += 2 * len(self.messages[idx]) + 2 * len(self.messages_reverse[idx]) + 2 * len([x for x in self.messages_other[idx] if x < floor])
+           
             # 都想往下，但不顺路
-            elif self.state[idx] == RUNNING_DOWN and command==GO_DOWN and floor > self.elev.elev_floor[idx]:
-                dist[idx] = (floor + self.elev.elev_floor[idx] - 2 * min(self.messages[idx])) if self.messages[idx] != [] else floor - self.elev.elev_floor[idx]
+            elif self.state[idx] == RUNNING_DOWN and command == GO_DOWN and floor > self.elev.elev_floor[idx]:
+                min_floor = min(self.messages[idx]) if self.messages[idx] != [] else self.elev.elev_floor[idx]
+                min_floor = min(min_floor, min(self.messages_reverse[idx] if self.messages_reverse[idx] != [] else [20]))
+                max_floor = max(self.messages_other[idx]) if self.messages_other[idx] != [] else floor
+                max_floor = max(max_floor, max(self.messages_reverse[idx] if self.messages_reverse[idx] != [] else [0]))
+                dist[idx] = 2 * max_floor - floor + self.elev.elev_floor[idx] - 2 * min_floor
+
+                dist[idx] += 2 * len(self.messages[idx]) + 2 * len(self.messages_reverse[idx]) + 2 * len([x for x in self.messages_other[idx] if x > floor])
 
         print(dist)
 
         best_idx = dist.index(min(dist))
+        
         if dist[best_idx] == 0:
             if self.elev.door_state[best_idx] != OPEN:
                 self.elev.door_state[best_idx] = OPEN
@@ -242,14 +273,14 @@ class Dispatch(object):
                 self.messages_other[best_idx].append(floor)
             elif self.state[best_idx] == RUNNING_UP and command == GO_DOWN:
                 self.messages_reverse[best_idx].append(floor)
-            elif self.state[best_idx] == RUNNING_DOWN and command==GO_DOWN and floor <= self.elev.elev_floor[best_idx]:
+            elif self.state[best_idx] == RUNNING_DOWN and command == GO_DOWN and floor <= self.elev.elev_floor[best_idx]:
                 self.messages[best_idx].append(floor)
                 self.messages[best_idx] = list(set(self.messages[best_idx]))
                 self.messages[best_idx].sort()
                 self.messages[best_idx].reverse()
-            elif self.state[best_idx] == RUNNING_DOWN and command==GO_DOWN and floor > self.elev.elev_floor[best_idx]:
+            elif self.state[best_idx] == RUNNING_DOWN and command == GO_DOWN and floor > self.elev.elev_floor[best_idx]:
                 self.messages_other[best_idx].append(floor)
-            elif self.state[best_idx] == RUNNING_DOWN and command==GO_UP:
+            elif self.state[best_idx] == RUNNING_DOWN and command == GO_UP:
                 self.messages_reverse[best_idx].append(floor)
 
     def elevMove(self, elev_idx, floor_idx):
@@ -263,7 +294,7 @@ class Dispatch(object):
                 self.messages[elev_idx].sort()
             else:
                 self.messages_reverse[elev_idx].append(floor_idx)
-            
+
         elif now_floor > floor_idx: # 当前层大于按键
             if self.state[elev_idx] == RUNNING_UP:
                 self.messages_reverse[elev_idx].append(floor_idx)
@@ -272,14 +303,14 @@ class Dispatch(object):
                 self.messages[elev_idx] = list(set(self.messages[elev_idx]))
                 self.messages[elev_idx].sort()
                 self.messages[elev_idx].reverse()
-        
+
         else:
             if self.elev.elev_state[elev_idx] == STILL:
                 if self.elev.door_state[elev_idx] != OPEN:
                     self.elev.door_state[elev_idx] = OPEN
                     self.openAnim(elev_idx)
                     self.elev.anim_state[elev_idx] = PE
-            
+
             floorbtn = self.elev.findChild(QPushButton,
                 "floorbtn {} {}".format(elev_idx, now_floor))
             floorbtn.setStyleSheet("border-radius: 11px")
@@ -288,7 +319,7 @@ class Dispatch(object):
     def warnCtrl(self, idx):
         self.elev.elev_enabled[idx] = False # 禁用电梯
         self.elev.elev_back[idx].setEnabled(False) # 禁用电梯背景
-        self.elev.elev_front[2 * idx].setEnabled(False) #禁言电梯门
+        self.elev.elev_front[2 * idx].setEnabled(False) # 禁言电梯门
         self.elev.elev_front[2 * idx + 1].setEnabled(False)
         self.elev.elev_anim[2 * idx].stop() # 停止电梯动画
         self.elev.elev_anim[2 * idx + 1].stop()
@@ -297,6 +328,7 @@ class Dispatch(object):
         self.elev.grid_layout_widget[idx].setEnabled(False) # 禁用楼层按键
         self.elev.openbtn[idx].setEnabled(False) # 禁用开门键
         self.elev.closebtn[idx].setEnabled(False) # 禁用关门键
+        self.elev.stateshow[idx].setEnabled(False)
 
         self.messages[idx].clear()
         self.messages_reverse[idx].clear()
@@ -308,12 +340,12 @@ class Dispatch(object):
             floorbtn.setStyleSheet("border-radius: 11px")
 
         self.openAnim(idx)
-        
+
         if (np.array(self.elev.elev_enabled) == False).all():
             for i in range(20):
-                self.elev.upbtn[i].setEnabled(False) 
+                self.elev.upbtn[i].setEnabled(False)
                 self.elev.downbtn[i].setEnabled(False)
-            
+
             time.sleep(0.5)
             QMessageBox.information(self.elev.warnbtn[idx], "警告", "坏了，全坏了")
 
@@ -325,7 +357,7 @@ class Dispatch(object):
                 self.elev.door_state[idx] = OPEN # 设置门的状态为开
                 self.openAnim(idx)
                 self.elev.anim_state[idx] = PE
-        
+
         else:
             if self.elev.door_state[idx] == OPEN and self.elev.elev_state[idx] == STILL:
                 self.elev.door_state[idx] = CLOSE # 设置门的状态为关

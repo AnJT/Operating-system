@@ -16,8 +16,8 @@ STILL = 0  # 静止状态
 RUNNING_UP = 1  # 上行状态
 RUNNING_DOWN = 2  # 下行状态
 
-PE = 0 # 有动画
-NOPE = 1 # 无动画
+PE = 0  # 有动画
+NOPE = 1  # 无动画
 
 GO_UP = 0  # 用户要上行
 GO_DOWN = 1  # 用户要下行
@@ -34,30 +34,30 @@ class Ui(QWidget):
         self.elev_state = [STILL] * 5  # 电梯运行状态（上/下/静止）
         self.elev_floor = [1] * 5  # 电梯所在的楼层
         self.door_state = [CLOSE] * 5  # 电梯门状态（开/关）
-
-        self.anim_state = [NOPE] * 5 # 电梯门动画状态
-        self.floor_label = [] # 外电梯label
-        self.upbtn = [] # 外电梯上升按钮
-        self.downbtn = [] # 外电梯下降按钮
-        self.label = [] # 电梯序号label
-        self.elev_front = [] # 电梯前门
-        self.elev_back = [] # 电梯门背景
-        self.elev_anim = [] # 电梯门动画
+        self.anim_state = [NOPE] * 5  # 电梯门动画状态
+        self.floor_label = []  # 外电梯label
+        self.upbtn = []  # 外电梯上升按钮
+        self.downbtn = []  # 外电梯下降按钮
+        self.label = []  # 电梯序号label
+        self.elev_front = []  # 电梯前门
+        self.elev_back = []  # 电梯门背景
+        self.elev_anim = []  # 电梯门动画
         self.led = []  # LED灯
+        self.stateshow = [] 
         self.warnbtn = []  # 报警器
         self.grid_layout_widget = []  # 楼层按键
         self.grid_layout = []
         self.openbtn = []  # 电梯门开关
         self.closebtn = []
 
-        self.initUI() 
+        self.initUI()
 
     def initUI(self):
         self.resize(1280, 720)
         self.center()
         style_file = os.getcwd() + '\style.qss'
-        self.setStyleSheet(str(self.loadQss(style_file))) # 加载QSS
-        self.setWindowFlag(Qt.FramelessWindowHint) # 设置无边框
+        self.setStyleSheet(str(self.loadQss(style_file)))  # 加载QSS
+        self.setWindowFlag(Qt.FramelessWindowHint)  # 设置无边框
         self.setWindowOpacity(0.9)  # 设置窗口透明度
 
         # 关闭和缩小按钮
@@ -119,6 +119,11 @@ class Ui(QWidget):
             self.led[i].setProperty("value", 1.0)
             self.led[i].setObjectName("led" + str(i))
 
+            self.stateshow.append(QGraphicsView(self))
+            self.stateshow[i].setGeometry(led_pos[i] + 10, 350, 71, 61)
+            self.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state.png)}")
+            self.stateshow[i].setObjectName("stateshow" + str(i))
+
         # 报警器
         warnbtn_pos = [190, 440, 690, 940, 1190]
         for i in range(len(warnbtn_pos)):
@@ -155,7 +160,7 @@ class Ui(QWidget):
         for i in range(20):
             # 上行按钮
             self.upbtn.append(QPushButton(self))
-            self.upbtn[i].setGeometry(230 + 90*(i%10), 60 if i<10 else 90, 24, 24)
+            self.upbtn[i].setGeometry(230 + 90 * (i % 10), 60 if i < 10 else 90, 24, 24)
             self.upbtn[i].setStyleSheet("QPushButton{border-image: url(resources/up.png)}"
                                         "QPushButton:hover{border-image: url(resources/up_hover.png)}"
                                         "QPushButton:pressed{border-image: url(resources/up_pressed.png)}")
@@ -164,7 +169,7 @@ class Ui(QWidget):
 
             # 下行按钮
             self.downbtn.append(QPushButton(self))
-            self.downbtn[i].setGeometry(260 + 90*(i%10), 60 if i<10 else 90, 24, 24)
+            self.downbtn[i].setGeometry(260 + 90 * (i % 10), 60 if i < 10 else 90, 24, 24)
             self.downbtn[i].setStyleSheet("QPushButton{border-image: url(resources/down.png)}"
                                           "QPushButton:hover{border-image: url(resources/down_hover.png)}"
                                           "QPushButton:pressed{border-image: url(resources/down_pressed.png)}")
@@ -173,8 +178,8 @@ class Ui(QWidget):
 
             # 楼层label
             self.floor_label.append(
-                QLabel("0"+str(i + 1) if i < 9 else str(i+1), self))
-            self.floor_label[i].setGeometry(200 + 90*(i%10), 60 if i<10 else 90, 24, 24)
+                QLabel("0" + str(i + 1) if i < 9 else str(i + 1), self))
+            self.floor_label[i].setGeometry(200 + 90 * (i % 10), 60 if i < 10 else 90, 24, 24)
             self.floor_label[i].setObjectName("label" + str(i))
             self.floor_label[i].setAlignment(Qt.AlignCenter)
             self.floor_label[i].setStyleSheet("color:white")
@@ -186,19 +191,21 @@ class Ui(QWidget):
             self.openbtn.append(QPushButton(self))
             self.openbtn[i].setGeometry(openbtn_pos[i] + 10, 590, 27, 27)
             self.openbtn[i].setObjectName("openbtn" + str(i))
-            self.openbtn[i].setStyleSheet("QPushButton{background: black;color:#fff;border-style: outset;border-radius: 11px}"
-                                          "QPushButton:hover{background-color: #49afcd;border-color: #5599ff}"
-                                          "QPushButton:pressed{border-radius:11px;background-color:red}"
-                                          )
+            self.openbtn[i].setStyleSheet(
+                "QPushButton{background: black;color:#fff;border-style: outset;border-radius: 11px}"
+                "QPushButton:hover{background-color: #49afcd;border-color: #5599ff}"
+                "QPushButton:pressed{border-radius:11px;background-color:red}"
+            )
             self.openbtn[i].setText("开")
             self.openbtn[i].clicked.connect(self.doorClick)
             self.closebtn.append(QPushButton(self))
             self.closebtn[i].setGeometry(closebtn_pos[i] - 7, 590, 27, 27)
             self.closebtn[i].setObjectName("closebtn" + str(i))
-            self.closebtn[i].setStyleSheet("QPushButton{background: black;color:#fff;border-style: outset;border-radius: 11px}"
-                                           "QPushButton:hover{background-color: #49afcd;border-color: #5599ff}"
-                                           "QPushButton:pressed{border-radius: 11px;background-color:red}"
-                                           )
+            self.closebtn[i].setStyleSheet(
+                "QPushButton{background: black;color:#fff;border-style: outset;border-radius: 11px}"
+                "QPushButton:hover{background-color: #49afcd;border-color: #5599ff}"
+                "QPushButton:pressed{border-radius: 11px;background-color:red}"
+            )
             self.closebtn[i].setText("关")
             self.closebtn[i].clicked.connect(self.doorClick)
 
@@ -211,7 +218,6 @@ class Ui(QWidget):
         QMessageBox.information(
             self.warnbtn[idx], "警告", "第" + str(idx + 1) + "号电梯已损坏")
         self.ctrl.warnCtrl(idx)
-        
 
     # 开关门槽函数
     def doorClick(self):
@@ -274,17 +280,17 @@ class Ui(QWidget):
 
     # 解决无边框后窗口无法移动
     def mousePressEvent(self, event):
-        if event.button()==Qt.LeftButton:
-            self.m_flag=True
-            self.m_Position=event.globalPos()-self.pos() #获取鼠标相对窗口的位置
+        if event.button() == Qt.LeftButton:
+            self.m_flag = True
+            self.m_Position = event.globalPos() - self.pos()  # 获取鼠标相对窗口的位置
             event.accept()
-            self.setCursor(QCursor(Qt.OpenHandCursor))  #更改鼠标图标
-            
+            self.setCursor(QCursor(Qt.OpenHandCursor))  # 更改鼠标图标
+
     def mouseMoveEvent(self, QMouseEvent):
-        if Qt.LeftButton and self.m_flag:  
-            self.move(QMouseEvent.globalPos()-self.m_Position)#更改窗口位置
+        if Qt.LeftButton and self.m_flag:
+            self.move(QMouseEvent.globalPos() - self.m_Position)  # 更改窗口位置
             QMouseEvent.accept()
-            
+
     def mouseReleaseEvent(self, QMouseEvent):
-        self.m_flag=False
+        self.m_flag = False
         self.setCursor(QCursor(Qt.ArrowCursor))
