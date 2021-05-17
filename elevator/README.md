@@ -114,4 +114,25 @@
   `pip install pyqt5-tools`
   
   `python main.py`
+  
+- 项目结构
+
+  │  README.md
+  │  
+  ├─resources
+  │      down.png
+  │      down_hover.png
+  │      down_pressed.png
+  │      state.png
+  │      state_down.png
+  │      state_up.png
+  │      up.png
+  │      up_hover.png
+  │      up_pressed.png
+  │      
+  └─src
+         dispatch.py
+         elevator.py
+         main.py
+         style.qss
 
