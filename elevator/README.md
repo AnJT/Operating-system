@@ -109,7 +109,7 @@
 
 - 项目构建：
 
-  > pip install PyQt5
-  > pip install pyqt5-tools
-  > python main.py
+  `pip install PyQt5`
+  `pip install pyqt5-tools`
+  `python main.py`
 
