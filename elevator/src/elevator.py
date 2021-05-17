@@ -121,7 +121,7 @@ class Ui(QWidget):
 
             self.stateshow.append(QGraphicsView(self))
             self.stateshow[i].setGeometry(led_pos[i] + 10, 350, 71, 61)
-            self.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(../../resources/state.png)}")
+            self.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(../resources/state.png)}")
             self.stateshow[i].setObjectName("stateshow" + str(i))
 
         # 报警器
