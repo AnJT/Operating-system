@@ -4,6 +4,8 @@ import numpy as np
 from PyQt5.QtCore import QAbstractAnimation, QTimer
 from PyQt5.QtWidgets import QMessageBox, QPushButton
 
+import rescources
+
 OPEN = 0  # 开门状态
 CLOSE = 1  # 关门状态
 
@@ -331,6 +333,22 @@ class Dispatch(object):
         self.elev.openbtn[idx].setEnabled(False) # 禁用开门键
         self.elev.closebtn[idx].setEnabled(False) # 禁用关门键
         self.elev.stateshow[idx].setEnabled(False) # 禁言状态显示
+
+        if self.state[idx] == RUNNING_UP:
+            for floor in self.messages[idx]:
+                self.outCtrl(floor, GO_UP)
+            for floor in self.messages_reverse[idx]:
+                self.outCtrl(floor, GO_DOWN)
+            for floor in self.messages_other[idx]:
+                self.outCtrl(floor, GO_UP)
+        else:
+            for floor in self.messages[idx]:
+                self.outCtrl(floor, GO_DOWN)
+            for floor in self.messages_reverse[idx]:
+                self.outCtrl(floor, GO_UP)
+            for floor in self.messages_other[idx]:
+                self.outCtrl(floor, GO_DOWN)
+
 
         self.messages[idx].clear()
         self.messages_reverse[idx].clear()
