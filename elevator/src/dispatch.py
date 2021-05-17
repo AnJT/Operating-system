@@ -48,7 +48,7 @@ class Dispatch(object):
             # 如果处于动画状态，等待动画结束
             if self.elev.anim_state[i] == PE:
                 self.elev.anim_state[i] = NOPE
-                self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state.png)}")
+                self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(../resources/state.png)}")
                 continue
 
             # 若消息队列不为空
@@ -60,7 +60,7 @@ class Dispatch(object):
                         self.elev.door_state[i] = OPEN
                         self.openAnim(i)
                         self.elev.anim_state[i] = PE
-                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state.png)}")
+                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(../resources/state.png)}")
 
                     if self.elev.elev_floor[i] < self.messages[i][0]:
                         self.elev.elev_state[i] = RUNNING_UP
@@ -86,17 +86,17 @@ class Dispatch(object):
                         if self.state[i] == RUNNING_DOWN:
                             outbtn = self.elev.findChild(QPushButton,
                             "downbtn {}".format(self.elev.elev_floor[i] - 1))
-                            outbtn.setStyleSheet("QPushButton{border-image: url(resources/down.png)}"
-                                          "QPushButton:hover{border-image: url(resources/down_hover.png)}"
-                                          "QPushButton:pressed{border-image: url(resources/down_pressed.png)}")
+                            outbtn.setStyleSheet("QPushButton{border-image: url(../resources/down.png)}"
+                                          "QPushButton:hover{border-image: url(../resources/down_hover.png)}"
+                                          "QPushButton:pressed{border-image: url(../resources/down_pressed.png)}")
                             outbtn.setEnabled(True)
                             print("downbtn {}".format(self.elev.elev_floor[i] - 1))
                         else:
                             outbtn = self.elev.findChild(QPushButton,
                             "upbtn {}".format(self.elev.elev_floor[i] - 1))
-                            outbtn.setStyleSheet("QPushButton{border-image: url(resources/up.png)}"
-                                        "QPushButton:hover{border-image: url(resources/up_hover.png)}"
-                                        "QPushButton:pressed{border-image: url(resources/up_pressed.png)}")
+                            outbtn.setStyleSheet("QPushButton{border-image: url(../resources/up.png)}"
+                                        "QPushButton:hover{border-image: url(../resources/up_hover.png)}"
+                                        "QPushButton:pressed{border-image: url(../resources/up_pressed.png)}")
                             outbtn.setEnabled(True)
                             print("upbtn {}".format(self.elev.elev_floor[i] - 1))
 
@@ -112,13 +112,13 @@ class Dispatch(object):
                         self.elev.elev_state[i] = RUNNING_UP
                         self.elev.elev_floor[i] += 1
                         self.elev.led[i].setProperty("value", self.elev.elev_floor[i])
-                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state_up.png)}")
+                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(../resources/state_up.png)}")
 
                     elif self.elev.elev_floor[i] > floor: # 向下运动
                         self.elev.elev_state[i] = RUNNING_DOWN
                         self.elev.elev_floor[i] -= 1
                         self.elev.led[i].setProperty("value", self.elev.elev_floor[i])
-                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state_down.png)}")
+                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(../resources/state_down.png)}")
 
                     else: # 电梯到目的地
                         self.openAnim(i)
@@ -127,7 +127,7 @@ class Dispatch(object):
                         self.elev.elev_state[i] = STILL
                         self.messages[i].pop(0)
 
-                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state.png)}")
+                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(../resources/state.png)}")
 
                         floorbtn = self.elev.findChild(QPushButton,
                         "floorbtn {} {}".format(i, self.elev.elev_floor[i]))
@@ -137,17 +137,17 @@ class Dispatch(object):
                         if self.state[i] == RUNNING_DOWN:
                             outbtn = self.elev.findChild(QPushButton,
                             "downbtn {}".format(self.elev.elev_floor[i] - 1))
-                            outbtn.setStyleSheet("QPushButton{border-image: url(resources/down.png)}"
-                                          "QPushButton:hover{border-image: url(resources/down_hover.png)}"
-                                          "QPushButton:pressed{border-image: url(resources/down_pressed.png)}")
+                            outbtn.setStyleSheet("QPushButton{border-image: url(../resources/down.png)}"
+                                          "QPushButton:hover{border-image: url(../resources/down_hover.png)}"
+                                          "QPushButton:pressed{border-image: url(../resources/down_pressed.png)}")
                             outbtn.setEnabled(True)
                             print("downbtn {}".format(self.elev.elev_floor[i] - 1))
                         else:
                             outbtn = self.elev.findChild(QPushButton,
                             "upbtn {}".format(self.elev.elev_floor[i] - 1))
-                            outbtn.setStyleSheet("QPushButton{border-image: url(resources/up.png)}"
-                                        "QPushButton:hover{border-image: url(resources/up_hover.png)}"
-                                        "QPushButton:pressed{border-image: url(resources/up_pressed.png)}")
+                            outbtn.setStyleSheet("QPushButton{border-image: url(../resources/up.png)}"
+                                        "QPushButton:hover{border-image: url(../resources/up_hover.png)}"
+                                        "QPushButton:pressed{border-image: url(../resources/up_pressed.png)}")
                             outbtn.setEnabled(True)
                             print("upbtn {}".format(self.elev.elev_floor[i] - 1))
 
@@ -252,17 +252,17 @@ class Dispatch(object):
             if command == GO_DOWN:
                 outbtn = self.elev.findChild(QPushButton,
                 "downbtn {}".format(floor - 1))
-                outbtn.setStyleSheet("QPushButton{border-image: url(resources/down.png)}"
-                                "QPushButton:hover{border-image: url(resources/down_hover.png)}"
-                                "QPushButton:pressed{border-image: url(resources/down_pressed.png)}")
+                outbtn.setStyleSheet("QPushButton{border-image: url(../resources/down.png)}"
+                                "QPushButton:hover{border-image: url(../resources/down_hover.png)}"
+                                "QPushButton:pressed{border-image: url(../resources/down_pressed.png)}")
                 outbtn.setEnabled(True)
                 print("downbtn {}".format(floor - 1))
             else:
                 outbtn = self.elev.findChild(QPushButton,
                 "upbtn {}".format(floor - 1))
-                outbtn.setStyleSheet("QPushButton{border-image: url(resources/up.png)}"
-                                        "QPushButton:hover{border-image: url(resources/up_hover.png)}"
-                                        "QPushButton:pressed{border-image: url(resources/up_pressed.png)}")
+                outbtn.setStyleSheet("QPushButton{border-image: url(../resources/up.png)}"
+                                        "QPushButton:hover{border-image: url(../resources/up_hover.png)}"
+                                        "QPushButton:pressed{border-image: url(../resources/up_pressed.png)}")
                 outbtn.setEnabled(True)
                 print("upbtn {}".format(floor - 1))
 
@@ -344,7 +344,7 @@ class Dispatch(object):
             self.elev.door_state[idx] = OPEN
             self.openAnim(idx)
             self.elev.anim_state[idx] = PE
-            self.elev.stateshow[idx].setStyleSheet("QGraphicsView{border-image: url(resources/state.png)}")
+            self.elev.stateshow[idx].setStyleSheet("QGraphicsView{border-image: url(../resources/state.png)}")
 
         if (np.array(self.elev.elev_enabled) == False).all():
             for i in range(20):
