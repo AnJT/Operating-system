@@ -1,5 +1,4 @@
 import os
-import sys
 
 from PyQt5.QtCore import QCoreApplication, QPropertyAnimation, QRect, Qt
 from PyQt5.QtGui import QCursor
@@ -7,7 +6,9 @@ from PyQt5.QtWidgets import (QDesktopWidget, QGraphicsView, QGridLayout,
                              QLabel, QLCDNumber, QMessageBox, QPushButton,
                              QWidget)
 
+import rescources
 from dispatch import Dispatch
+from style import qss
 
 OPEN = 0  # 开门状态
 CLOSE = 1  # 关门状态
@@ -56,7 +57,7 @@ class Ui(QWidget):
         self.resize(1280, 720)
         self.center()
         style_file = os.getcwd() + '\style.qss'
-        self.setStyleSheet(str(self.loadQss(style_file)))  # 加载QSS
+        self.setStyleSheet(qss)  # 加载QSS
         self.setWindowFlag(Qt.FramelessWindowHint)  # 设置无边框
         self.setWindowOpacity(0.9)  # 设置窗口透明度
 
@@ -121,7 +122,7 @@ class Ui(QWidget):
 
             self.stateshow.append(QGraphicsView(self))
             self.stateshow[i].setGeometry(led_pos[i] + 10, 350, 71, 61)
-            self.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(../resources/state.png)}")
+            self.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(:/state.png)}")
             self.stateshow[i].setObjectName("stateshow" + str(i))
 
         # 报警器
@@ -161,18 +162,18 @@ class Ui(QWidget):
             # 上行按钮
             self.upbtn.append(QPushButton(self))
             self.upbtn[i].setGeometry(230 + 90 * (i % 10), 60 if i < 10 else 90, 24, 24)
-            self.upbtn[i].setStyleSheet("QPushButton{border-image: url(../resources/up.png)}"
-                                        "QPushButton:hover{border-image: url(../resources/up_hover.png)}"
-                                        "QPushButton:pressed{border-image: url(../resources/up_pressed.png)}")
+            self.upbtn[i].setStyleSheet("QPushButton{border-image: url(:/up.png)}"
+                                        "QPushButton:hover{border-image: url(:/up_hover.png)}"
+                                        "QPushButton:pressed{border-image: url(:/up_pressed.png)}")
             self.upbtn[i].setObjectName("upbtn " + str(i))
             self.upbtn[i].clicked.connect(self.outClick)
 
             # 下行按钮
             self.downbtn.append(QPushButton(self))
             self.downbtn[i].setGeometry(260 + 90 * (i % 10), 60 if i < 10 else 90, 24, 24)
-            self.downbtn[i].setStyleSheet("QPushButton{border-image: url(../resources/down.png)}"
-                                          "QPushButton:hover{border-image: url(../resources/down_hover.png)}"
-                                          "QPushButton:pressed{border-image: url(../resources/down_pressed.png)}")
+            self.downbtn[i].setStyleSheet("QPushButton{border-image: url(:/down.png)}"
+                                          "QPushButton:hover{border-image: url(:/down_hover.png)}"
+                                          "QPushButton:pressed{border-image: url(:/down_pressed.png)}")
             self.downbtn[i].setObjectName("downbtn " + str(i))
             self.downbtn[i].clicked.connect(self.outClick)
 
@@ -250,12 +251,12 @@ class Ui(QWidget):
         btn = sender.objectName()
         if btn[0] == 'd':
             self.downbtn[floor].setStyleSheet(
-                "QPushButton{border-image: url(../resources/down_pressed.png)}")
+                "QPushButton{border-image: url(:/down_pressed.png)}")
             self.downbtn[floor].setEnabled(False)
             choice = GO_DOWN
         else:
             self.upbtn[floor].setStyleSheet(
-                "QPushButton{border-image: url(../resources/up_pressed.png)}")
+                "QPushButton{border-image: url(:/up_pressed.png)}")
             self.upbtn[floor].setEnabled(False)
 
             choice = GO_UP
@@ -268,15 +269,6 @@ class Ui(QWidget):
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
-
-    # 加载QSS
-    def loadQss(self, f):
-        file = open(f)
-        lines = file.readlines()
-        res = ''
-        for line in lines:
-            res += line
-        return res
 
     # 解决无边框后窗口无法移动
     def mousePressEvent(self, event):

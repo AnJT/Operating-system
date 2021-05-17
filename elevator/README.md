@@ -119,23 +119,14 @@
 
   ```
   - │  README.md
-    │  
-    ├─resources
-    │      down.png
-    │      down_hover.png
-    │      down_pressed.png
-    │      state.png
-    │      state_down.png
-    │      state_up.png
-    │      up.png
-    │      up_hover.png
-    │      up_pressed.png
     │      
     └─src
            dispatch.py
            elevator.py
            main.py
-           style.qss
+           rescources.py
+           style.py
+           
   
   
   ```
