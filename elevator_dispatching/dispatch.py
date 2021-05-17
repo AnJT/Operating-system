@@ -21,6 +21,7 @@ INF = 200
 
 class Dispatch(object):
     def __init__(self, Elev):
+        # 连接电梯
         self.elev = Elev
 
         # 每秒更新电梯状态
@@ -41,6 +42,9 @@ class Dispatch(object):
     def updateElevState(self):
         """更新电梯状态"""
         for i in range(len(self.messages)):
+            if self.elev.elev_enabled[i] == False:
+                continue
+
             # 如果处于动画状态，等待动画结束
             if self.elev.anim_state[i] == PE:
                 self.elev.anim_state[i] = NOPE
@@ -73,7 +77,6 @@ class Dispatch(object):
                             self.elev.anim_state[i] = PE
                     else:
                         self.messages[i].pop(0)
-                        self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state.png)}")
 
                         floorbtn = self.elev.findChild(QPushButton,
                         "floorbtn {} {}".format(i, self.elev.elev_floor[i]))
@@ -81,8 +84,6 @@ class Dispatch(object):
                         floorbtn.setEnabled(True)
 
                         if self.state[i] == RUNNING_DOWN:
-                            self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state_down.png)}")
-
                             outbtn = self.elev.findChild(QPushButton,
                             "downbtn {}".format(self.elev.elev_floor[i] - 1))
                             outbtn.setStyleSheet("QPushButton{border-image: url(resources/down.png)}"
@@ -91,8 +92,6 @@ class Dispatch(object):
                             outbtn.setEnabled(True)
                             print("downbtn {}".format(self.elev.elev_floor[i] - 1))
                         else:
-                            self.elev.stateshow[i].setStyleSheet("QGraphicsView{border-image: url(resources/state_up.png)}")
-                            
                             outbtn = self.elev.findChild(QPushButton,
                             "upbtn {}".format(self.elev.elev_floor[i] - 1))
                             outbtn.setStyleSheet("QPushButton{border-image: url(resources/up.png)}"
@@ -105,6 +104,7 @@ class Dispatch(object):
                             self.elev.door_state[i] = OPEN
                             self.openAnim(i)
                             self.elev.anim_state[i] = PE
+
                 # 若电梯在运动
                 else:
                     floor = self.messages[i][0]
@@ -185,6 +185,8 @@ class Dispatch(object):
 
     def outCtrl(self, floor, command):
         """外电梯调度控制"""
+
+        # 先看一下哪部电梯可用
         enabled_list = []
         for i in range(5):
             if self.elev.elev_enabled[i]:
@@ -209,7 +211,7 @@ class Dispatch(object):
 
                 dist[idx] += 2 * len(self.messages[idx]) + 2 * len([x for x in self.messages_reverse[idx] if x > floor])
             
-            # 电梯往下呢，但人想网上
+            # 电梯往下呢，但人想往上
             elif self.state[idx] == RUNNING_DOWN and command == GO_UP:
                 min_floor = min(floor, self.elev.elev_floor[idx])
                 min_floor = min(min_floor, min(self.messages[idx] if self.messages[idx] != [] else [20]))
@@ -328,7 +330,7 @@ class Dispatch(object):
         self.elev.grid_layout_widget[idx].setEnabled(False) # 禁用楼层按键
         self.elev.openbtn[idx].setEnabled(False) # 禁用开门键
         self.elev.closebtn[idx].setEnabled(False) # 禁用关门键
-        self.elev.stateshow[idx].setEnabled(False)
+        self.elev.stateshow[idx].setEnabled(False) # 禁言状态显示
 
         self.messages[idx].clear()
         self.messages_reverse[idx].clear()
@@ -338,8 +340,11 @@ class Dispatch(object):
             floorbtn = self.elev.findChild(QPushButton,
                 "floorbtn {} {}".format(idx, i + 1))
             floorbtn.setStyleSheet("border-radius: 11px")
-
-        self.openAnim(idx)
+        if self.elev.door_state[idx] != OPEN:
+            self.elev.door_state[idx] = OPEN
+            self.openAnim(idx)
+            self.elev.anim_state[idx] = PE
+            self.elev.stateshow[idx].setStyleSheet("QGraphicsView{border-image: url(resources/state.png)}")
 
         if (np.array(self.elev.elev_enabled) == False).all():
             for i in range(20):

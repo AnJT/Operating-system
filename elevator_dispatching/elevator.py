@@ -43,7 +43,7 @@ class Ui(QWidget):
         self.elev_back = []  # 电梯门背景
         self.elev_anim = []  # 电梯门动画
         self.led = []  # LED灯
-        self.stateshow = [] 
+        self.stateshow = [] # 电梯状态显示器
         self.warnbtn = []  # 报警器
         self.grid_layout_widget = []  # 楼层按键
         self.grid_layout = []
