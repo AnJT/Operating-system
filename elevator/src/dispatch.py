@@ -227,7 +227,7 @@ class Dispatch(object):
                 max_floor = max(self.messages[idx]) if self.messages[idx] != [] else self.elev.elev_floor[idx]
                 max_floor = max(max_floor, max(self.messages_reverse[idx] if self.messages_reverse[idx] != [] else [0]))
                 min_floor = min(self.messages_other[idx]) if self.messages_other[idx] != [] else floor
-                min_floor = min(min_floor, min(self.messages_reverse[idx] if self.messages_other[idx] != [] else [20]))
+                min_floor = min(min_floor, min(self.messages_reverse[idx] if self.messages_reverse[idx] != [] else [20]))
                 dist[idx] = 2 * max_floor - self.elev.elev_floor[idx] + floor - 2 * min_floor
 
                 dist[idx] += 2 * len(self.messages[idx]) + 2 * len(self.messages_reverse[idx]) + 2 * len([x for x in self.messages_other[idx] if x < floor])
