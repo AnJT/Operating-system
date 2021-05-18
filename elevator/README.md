@@ -67,7 +67,7 @@
 
     <img src="https://github.com/AnJT/IMG/blob/main/%E8%AF%B7%E6%B1%822.png?raw=true" height="500">
 
-    <img src="https://github.com/AnJT/IMG/blob/main/%E5%A4%96.png?raw=true" height="500">
+    <img src="https://github.com/AnJT/IMG/blob/main/%E5%A4%96.png?raw=true">
 
 ## 四、 项目操作说明
 
@@ -114,4 +114,3 @@
   `pip install pyqt5-tools`
   
   `python main.py`
-  
