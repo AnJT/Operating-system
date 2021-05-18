@@ -115,20 +115,3 @@
   
   `python main.py`
   
-- 项目结构
-
-  ```
-  - │  README.md
-    │      
-    └─src
-           dispatch.py
-           elevator.py
-           main.py
-           rescources.py
-           style.py
-           
-  
-  
-  ```
-  
-  
