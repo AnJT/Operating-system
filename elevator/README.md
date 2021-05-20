@@ -109,8 +109,6 @@
 
 - 项目构建：
 
-  `pip install PyQt5`
-  
-  `pip install pyqt5-tools`
+  `pip install -r requirements.txt`
   
   `python main.py`
