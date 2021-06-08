@@ -20,10 +20,11 @@
       </el-col>
       <el-col :span="3">
         <div style="height: 30px">
-          <a href="https://github.com/AnJT">
-            <p style="margin: 0">番茄炒鸡蛋</p>
-            <p style="margin: 0">1952560安江涛</p>
-          </a>
+          <div>
+            <el-link :underline="false" href="https://github.com/AnJT">番茄炒鸡蛋</el-link>
+          </div>
+
+            <el-link :underline="false" href="https://github.com/AnJT">1952560安江涛</el-link>
         </div>
       </el-col>
     </el-row>
