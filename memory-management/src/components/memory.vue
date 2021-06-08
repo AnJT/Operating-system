@@ -30,7 +30,7 @@
     </el-row>
     <div class="el-divider el-divider--horizontal" style="margin-bottom: 0"><!--v-if--></div>
     <el-row :gutter="20" style="margin: 0; padding: 0">
-      <el-col :span="5" style="width: 300px; background-color: rgb(238, 241, 246); box-shadow: rgba(0, 0, 0, 0.1) 0 2px 12px 0; height: 600px">
+      <el-col :span="5" style="width: 300px; height: 600px">
           <p>作业指令总数</p>
           <p class="hh_p">320</p>
           <p>每页存放指令数</p>
@@ -42,8 +42,6 @@
             <el-radio-button label="FIFO算法"></el-radio-button>
             <el-radio-button label="LRU算法"></el-radio-button>
           </el-radio-group>
-          <p>指令执行顺序</p>
-          <div class="el-divider el-divider--horizontal"><!--v-if--></div>
           <p>缺页数</p>
           <p class="hh_p">{{miss_page_num}}</p>
           <p>缺页率</p>
