@@ -54,52 +54,52 @@
         <el-row :gutter="20">
           <el-col :span="6"><div class="grid-content bg-purple">
             <div class="common-layout">
-              <el-container class="el-card is-always-shadow box-card">
+              <el-container class="el-card is-always-shadow box-card" :style="hh_style[0]">
                 <el-header class="el-card__header">
                   <p>第{{frame[0].num == null? 'None': frame[0].num}}页</p>
                 </el-header>
                 <div class="el-divider el-divider--horizontal" style="margin: 0"><!--v-if--></div>
                 <div class="el-card__body" style="height: 340px; padding: 10px">
-                  <div class="transition-box" style="background-color: rgb(109, 178, 250);" v-for="item in frame[0].list" :key="item">{{item}}</div>
+                  <div class="transition-box" style="background: rgb(109, 178, 250);" :style="order_style[item]" v-for="item in frame[0].list" :key="item">{{item}}</div>
                 </div>
               </el-container>
             </div>
           </div></el-col>
           <el-col :span="6"><div class="grid-content bg-purple">
             <div class="common-layout">
-              <el-container class="el-card is-always-shadow box-card">
+              <el-container class="el-card is-always-shadow box-card" :style="hh_style[1]">
                 <el-header class="el-card__header">
                   <p>第{{frame[1].num == null? 'None': frame[1].num}}页</p>
                 </el-header>
                 <div class="el-divider el-divider--horizontal" style="margin: 0"><!--v-if--></div>
                 <div class="el-card__body" style="height: 340px; padding: 10px">
-                  <div class="transition-box" style="background-color: rgb(109, 178, 250);" v-for="item in frame[1].list" :key="item">{{item}}</div>
+                  <div class="transition-box" style="background: rgb(109, 178, 250);" :style="order_style[item]" v-for="item in frame[1].list" :key="item">{{item}}</div>
                 </div>
               </el-container>
             </div>
           </div></el-col>
           <el-col :span="6"><div class="grid-content bg-purple">
             <div class="common-layout">
-              <el-container class="el-card is-always-shadow box-card">
+              <el-container class="el-card is-always-shadow box-card" :style="hh_style[2]">
                 <el-header class="el-card__header">
                   <p>第{{frame[2].num == null? 'None': frame[2].num}}页</p>
                 </el-header>
                 <div class="el-divider el-divider--horizontal" style="margin: 0"><!--v-if--></div>
                 <div class="el-card__body" style="height: 340px; padding: 10px">
-                  <div class="transition-box" style="background-color: rgb(109, 178, 250);" v-for="item in frame[2].list" :key="item">{{item}}</div>
+                  <div class="transition-box" style="background: rgb(109, 178, 250);" :style="order_style[item]" v-for="item in frame[2].list" :key="item">{{item}}</div>
                 </div>
               </el-container>
             </div>
           </div></el-col>
           <el-col :span="6"><div class="grid-content bg-purple">
             <div class="common-layout">
-              <el-container class="el-card is-always-shadow box-card">
+              <el-container class="el-card is-always-shadow box-card" :style="hh_style[3]">
                 <el-header class="el-card__header">
                   <p>第{{frame[3].num == null? 'None': frame[3].num}}页</p>
                 </el-header>
                 <div class="el-divider el-divider--horizontal" style="margin: 0"><!--v-if--></div>
                 <div class="el-card__body" style="height: 340px; padding: 10px">
-                  <div class="transition-box" style="background-color: rgb(109, 178, 250);" v-for="item in frame[3].list" :key="item">{{item}}</div>
+                  <div class="transition-box" style="background: rgb(109, 178, 250);" :style="order_style[item]" v-for="item in frame[3].list" :key="item">{{item}}</div>
                 </div>
               </el-container>
             </div>
@@ -115,9 +115,11 @@
         </el-row>
       </el-col>
       <el-col :span="6">
-          <p class="hh_p">已执行指令</p>
+        <p class="hh_p">已执行指令</p>
           <el-table
               :data="table_data"
+              highlight-current-row
+              ref="table"
               height="540"
               style="width: 500px">
             <el-table-column
@@ -168,9 +170,13 @@ export default {
       is_disabled: false,
       page_data: [],
       next_address: null,
+      pre_address: null,
       page_queue: [],
       lru_queue: [],
-      interval: ''
+      interval: '',
+      hh_style: ['','','',''],
+      order_style: [],
+      current_row: null
     };
   },
   methods:{
@@ -190,7 +196,7 @@ export default {
       this.s_exec_name = this.s_exec_name === '连续执行' ? '停止执行' : '连续执行'
       this.is_disabled = !this.is_disabled
       if(this.is_disabled === true)
-        this.interval = setInterval(this.exec, 50)
+        this.interval = setInterval(this.exec, 500)
       else
         clearInterval(this.interval)
     },
@@ -202,8 +208,13 @@ export default {
       this.s_exec_name = '连续执行'
       this.is_disabled = false
       this.next_address = Math.floor(Math.random() * 320)
+      this.pre_address = null
       this.page_queue = []
-      this.lru_queue = [0, 0, 0, 0]
+      this.lru_queue = []
+      this.hh_style = ['','','','']
+      this.current_row = null
+      for(let i = 0; i < 320; i++)
+        this.order_style.push('')
     },
     //返回应该放在哪个frame里
     FIFO(){
@@ -240,16 +251,19 @@ export default {
         clearInterval(this.interval)
       }
       else {
+        this.hh_style = ['','','','']
+        this.order_style[this.pre_address] = ''
         let page_num = Math.floor(this.next_address / 10)
         let is_find = false
 
         for (let i = 0; i < this.frame.length; i++) {
           if (page_num === this.frame[i].num) {
+            this.lru_queue[i] = new Date().getTime()
             is_find = true
             break
           }
         }
-
+        this.order_style[this.next_address] = {background: 'Orchid'}
         if (is_find === false) {
           this.miss_page_num++
           this.miss_page_rate = Math.floor(this.miss_page_num * 100 / (this.table_data.length + 1))
@@ -258,6 +272,7 @@ export default {
             result = this.FIFO()
           else
             result = this.LRU()
+          this.hh_style[result[0]] = {background: 'cornflowerblue'}
           this.frame[result[0]].num = page_num
           this.frame[result[0]].list = this.page_data[page_num]
           let out_page = result[1] == null ? '' : result[1]
@@ -273,7 +288,8 @@ export default {
             order: this.table_data.length, address: this.next_address, loss_page: 'No', out_page: '', in_page: ''
           })
         }
-
+        this.setCurrent()
+        this.pre_address = this.next_address
         //产生下一条指令地址
         let rand = Math.random()
         //顺序执行
@@ -288,10 +304,13 @@ export default {
         }
         //25%的概率向前跳
         else {
-          let dx = -Math.floor(Math.random() * 160)
+          let dx = Math.floor(Math.random() * 160)
           this.next_address = (this.next_address - dx + 320) % 320
         }
       }
+    },
+    setCurrent() {
+      this.$refs.table.setCurrentRow(this.table_data[0]);
     }
   },
   created() {
@@ -304,16 +323,14 @@ export default {
     }
     this.next_address = Math.floor(Math.random() * 320)
     this.lru_queue = [0, 0, 0, 0]
-  },
-  mounted() {
-    // setInterval(() => {
-    //   this.counter++
-    // }, 1000)
+    for(let i = 0; i < 320; i++)
+      this.order_style.push('')
   }
 }
 </script>
 
 <style>
+
 .transition-box {
   width: 100px;
   height: 20px;
