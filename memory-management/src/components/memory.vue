@@ -123,7 +123,7 @@
             <el-table-column
                 prop="order"
                 label=""
-                width="40px">
+                width="60px">
             </el-table-column>
             <el-table-column
                 prop="address"
@@ -146,7 +146,6 @@
                 width="70px">
             </el-table-column>
           </el-table>
-
       </el-col>
     </el-row>
   </div>
@@ -169,30 +168,42 @@ export default {
       is_disabled: false,
       page_data: [],
       next_address: null,
-      page_queue: []
+      page_queue: [],
+      lru_queue: [],
+      interval: ''
     };
   },
   methods:{
     //单步执行
     hh(){
+      if(this.table_data.length === 320)
+        return
       this.exec()
     },
     //连续执行
     hhhh : function (){
+      if(this.table_data.length === 320){
+        this.s_exec_name = '连续执行'
+        this.is_disabled = false
+        return
+      }
       this.s_exec_name = this.s_exec_name === '连续执行' ? '停止执行' : '连续执行'
       this.is_disabled = !this.is_disabled
+      if(this.is_disabled === true)
+        this.interval = setInterval(this.exec, 50)
+      else
+        clearInterval(this.interval)
     },
     init(){
       this.miss_page_num = 0
       this.miss_page_rate = 0
-      this.page_algorithm = 'FIFO算法'
       this.frame = [{num: null, list: []}, {num: null, list: []}, {num: null, list: []}, {num: null, list: []},]
       this.table_data = []
       this.s_exec_name = '连续执行'
       this.is_disabled = false
       this.next_address = Math.floor(Math.random() * 320)
-      this.page_data = []
       this.page_queue = []
+      this.lru_queue = [0, 0, 0, 0]
     },
     //返回应该放在哪个frame里
     FIFO(){
@@ -209,35 +220,57 @@ export default {
         return [frame_num, out_page]
       }
     },
-    exec(){
-      // alert(this.page_data[0])
-      if(this.table_data.length < 320) {
+    LRU(){
+      let frame_num = 0
+      let min_time = this.lru_queue[0]
+      for(let i = 1; i < this.lru_queue.length; i++){
+        if(this.lru_queue[i] < min_time){
+          frame_num = i
+          min_time = this.lru_queue[i]
+        }
+      }
+      this.lru_queue[frame_num] = new Date().getTime()
+      let out_page = this.frame[frame_num].num
+      return [frame_num, out_page]
+    },
+    exec() {
+      if (this.table_data.length === 320) {
+        this.s_exec_name = '连续执行'
+        this.is_disabled = false
+        clearInterval(this.interval)
+      }
+      else {
         let page_num = Math.floor(this.next_address / 10)
         let is_find = false
 
-        for(let i = 0;i < this.frame.length; i++){
-          if(page_num === this.frame[i].num){
+        for (let i = 0; i < this.frame.length; i++) {
+          if (page_num === this.frame[i].num) {
             is_find = true
             break
           }
         }
 
-        if(is_find === false){
-          this.miss_page_num ++
+        if (is_find === false) {
+          this.miss_page_num++
           this.miss_page_rate = Math.floor(this.miss_page_num * 100 / (this.table_data.length + 1))
-          if(this.page_algorithm ==='FIFO算法'){
-            let fifo = this.FIFO()
-            this.frame[fifo[0]].num = page_num
-            this.frame[fifo[0]].list = this.page_data[page_num]
-            let out_page = fifo[1] == null? '': fifo[1]
-            this.table_data.unshift({
-              order: this.table_data.length, address: this.next_address, loss_page: 'Yes', out_page: out_page, in_page: page_num
-            })
-          }
-        }
-        else{
+          let result
+          if (this.page_algorithm === 'FIFO算法')
+            result = this.FIFO()
+          else
+            result = this.LRU()
+          this.frame[result[0]].num = page_num
+          this.frame[result[0]].list = this.page_data[page_num]
+          let out_page = result[1] == null ? '' : result[1]
           this.table_data.unshift({
-            order: this.table_data.length, address: this.next_address, loss_page: 'No', out_page: '', in_page: page_num
+            order: this.table_data.length,
+            address: this.next_address,
+            loss_page: 'Yes',
+            out_page: out_page,
+            in_page: page_num
+          })
+        } else {
+          this.table_data.unshift({
+            order: this.table_data.length, address: this.next_address, loss_page: 'No', out_page: '', in_page: ''
           })
         }
 
@@ -249,18 +282,17 @@ export default {
           this.next_address %= 320
         }
         //25%的概率向后跳
-        else if(rand < 0.75){
+        else if (rand < 0.75) {
           let dx = Math.floor(Math.random() * 160)
           this.next_address = (this.next_address + dx) % 320
         }
         //25%的概率向前跳
-        else{
+        else {
           let dx = -Math.floor(Math.random() * 160)
           this.next_address = (this.next_address - dx + 320) % 320
         }
       }
     }
-
   },
   created() {
     //初始化页表
@@ -271,6 +303,7 @@ export default {
       this.page_data.push(arr)
     }
     this.next_address = Math.floor(Math.random() * 320)
+    this.lru_queue = [0, 0, 0, 0]
   },
   mounted() {
     // setInterval(() => {
