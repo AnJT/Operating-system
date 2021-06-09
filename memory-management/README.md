@@ -1,24 +1,24 @@
-# memory-management
+# 请求调页存储管理方式模拟
 
-## Project setup
-```
-npm install
-```
+## 项目环境
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+- ##### 开发环境
 
-### Compiles and minifies for production
-```
-npm run build
-```
+  Windows 10
 
-### Lints and fixes files
-```
-npm run lint
-```
+  WebStorm
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+  Vue + Node.js
+
+- ##### 运行方法
+
+  1. 在线运行：https://anjt.github.io/Operating-system/
+
+  2. 本地运行：
+
+     `npm install`
+
+     
+
+     `npm run serve`
+
