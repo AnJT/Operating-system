@@ -172,7 +172,7 @@ export default {
       next_address: null,
       pre_address: null,
       page_queue: [],
-      lru_queue: [],
+      lru_queue: [0, 0, 0, 0],
       interval: '',
       hh_style: ['','','',''],
       order_style: [],
@@ -210,7 +210,7 @@ export default {
       this.next_address = Math.floor(Math.random() * 320)
       this.pre_address = null
       this.page_queue = []
-      this.lru_queue = []
+      this.lru_queue = [0, 0, 0, 0]
       this.hh_style = ['','','','']
       this.current_row = null
       for(let i = 0; i < 320; i++)
@@ -221,6 +221,7 @@ export default {
       if(this.page_queue.length < 4){
         this.page_queue.push(this.page_queue.length)
         let out_page = this.frame[this.page_queue.length - 1].num
+        this.lru_queue[this.page_queue.length - 1] = new Date().getTime()
         return [this.page_queue.length - 1, out_page];
       }
       else{
@@ -228,6 +229,7 @@ export default {
         let out_page = this.frame[frame_num].num
         this.page_queue.shift()
         this.page_queue.push(frame_num)
+        this.lru_queue[frame_num] = new Date().getTime()
         return [frame_num, out_page]
       }
     },
@@ -240,6 +242,9 @@ export default {
           min_time = this.lru_queue[i]
         }
       }
+      this.page_queue.push(frame_num)
+      if(this.page_queue.length > 4)
+        this.page_queue.shift()
       this.lru_queue[frame_num] = new Date().getTime()
       let out_page = this.frame[frame_num].num
       return [frame_num, out_page]
