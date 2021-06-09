@@ -42,6 +42,8 @@
             <el-radio-button label="FIFO算法"></el-radio-button>
             <el-radio-button label="LRU算法"></el-radio-button>
           </el-radio-group>
+          <p>下一条指令地址</p>
+          <p class="hh_p">{{next_address == null? 'None': next_address}}</p>
           <p>缺页数</p>
           <p class="hh_p">{{miss_page_num}}</p>
           <p>缺页率</p>
@@ -54,11 +56,11 @@
             <div class="common-layout">
               <el-container class="el-card is-always-shadow box-card">
                 <el-header class="el-card__header">
-                  <p>第{{page_0}}页</p>
+                  <p>第{{frame[0].num == null? 'None': frame[0].num}}页</p>
                 </el-header>
                 <div class="el-divider el-divider--horizontal" style="margin: 0"><!--v-if--></div>
                 <div class="el-card__body" style="height: 340px; padding: 10px">
-                    <div class="transition-box" style="background-color: rgb(109, 178, 250);" v-for="item in list_0" :key="item">{{item}}</div>
+                  <div class="transition-box" style="background-color: rgb(109, 178, 250);" v-for="item in frame[0].list" :key="item">{{item}}</div>
                 </div>
               </el-container>
             </div>
@@ -67,11 +69,11 @@
             <div class="common-layout">
               <el-container class="el-card is-always-shadow box-card">
                 <el-header class="el-card__header">
-                  <p>第{{page_1}}页</p>
+                  <p>第{{frame[1].num == null? 'None': frame[1].num}}页</p>
                 </el-header>
                 <div class="el-divider el-divider--horizontal" style="margin: 0"><!--v-if--></div>
                 <div class="el-card__body" style="height: 340px; padding: 10px">
-                  <div class="transition-box" style="background-color: rgb(109, 178, 250);" v-for="item in list_1" :key="item">{{item}}</div>
+                  <div class="transition-box" style="background-color: rgb(109, 178, 250);" v-for="item in frame[1].list" :key="item">{{item}}</div>
                 </div>
               </el-container>
             </div>
@@ -80,11 +82,11 @@
             <div class="common-layout">
               <el-container class="el-card is-always-shadow box-card">
                 <el-header class="el-card__header">
-                  <p>第{{page_2}}页</p>
+                  <p>第{{frame[2].num == null? 'None': frame[2].num}}页</p>
                 </el-header>
                 <div class="el-divider el-divider--horizontal" style="margin: 0"><!--v-if--></div>
                 <div class="el-card__body" style="height: 340px; padding: 10px">
-                  <div class="transition-box" style="background-color: rgb(109, 178, 250);" v-for="item in list_2" :key="item">{{item}}</div>
+                  <div class="transition-box" style="background-color: rgb(109, 178, 250);" v-for="item in frame[2].list" :key="item">{{item}}</div>
                 </div>
               </el-container>
             </div>
@@ -93,11 +95,11 @@
             <div class="common-layout">
               <el-container class="el-card is-always-shadow box-card">
                 <el-header class="el-card__header">
-                  <p>第{{page_3}}页</p>
+                  <p>第{{frame[3].num == null? 'None': frame[3].num}}页</p>
                 </el-header>
                 <div class="el-divider el-divider--horizontal" style="margin: 0"><!--v-if--></div>
                 <div class="el-card__body" style="height: 340px; padding: 10px">
-                  <div class="transition-box" style="background-color: rgb(109, 178, 250);" v-for="item in list_3" :key="item">{{item}}</div>
+                  <div class="transition-box" style="background-color: rgb(109, 178, 250);" v-for="item in frame[3].list" :key="item">{{item}}</div>
                 </div>
               </el-container>
             </div>
@@ -105,17 +107,17 @@
         </el-row>
 
         <el-row :gutter="20" style="padding-top: 40px">
-          <el-col :span="5"></el-col>
-          <el-col :span="5"><el-button type="primary" icon="el-icon-edit" round>单步执行</el-button></el-col>
-          <el-col :span="5"><el-button type="primary" icon="el-icon-edit" round>连续执行</el-button></el-col>
-          <el-col :span="5"><el-button type="primary" icon="el-icon-edit" round>复位 </el-button></el-col>
-          <el-col :span="8"></el-col>
+          <el-col :span="4"></el-col>
+          <el-col :span="5"><el-button @click="hh" v-bind:disabled="is_disabled" type="primary" icon="el-icon-arrow-right" round>单步执行</el-button></el-col>
+          <el-col :span="5"><el-button @click="hhhh" type="primary" icon="el-icon-d-arrow-right" round>{{s_exec_name}}</el-button></el-col>
+          <el-col :span="5"><el-button @click="init" v-bind:disabled="is_disabled" class="el-button el-button--warning is-round" type="primary" icon="el-icon-refresh-right" round>复位 </el-button></el-col>
+          <el-col :span="9"></el-col>
         </el-row>
       </el-col>
       <el-col :span="6">
           <p class="hh_p">已执行指令</p>
           <el-table
-              :data="tableData"
+              :data="table_data"
               height="540"
               style="width: 500px">
             <el-table-column
@@ -158,33 +160,122 @@ export default {
   },
   data(){
     return{
-      name: 'hh',
       miss_page_num: 0,
       miss_page_rate: 0,
-      page_algorithm:'FIFO算法',
-      page_0:'None',
-      page_1:'None',
-      page_2:'None',
-      page_3:'None',
-      list_0:[],
-      list_1:[],
-      list_2:[],
-      list_3:["1","2",3,4,5,6,7,8,9,10],
-      tableData: []
+      page_algorithm: 'FIFO算法',
+      frame: [{num: null, list: []}, {num: null, list: []}, {num: null, list: []}, {num: null, list: []},],
+      table_data: [],
+      s_exec_name: '连续执行',
+      is_disabled: false,
+      page_data: [],
+      next_address: null,
+      page_queue: []
     };
   },
   methods:{
+    //单步执行
     hh(){
-      alert('实在是拦不住！')
+      this.exec()
     },
-    hhh : function (){
+    //连续执行
+    hhhh : function (){
+      this.s_exec_name = this.s_exec_name === '连续执行' ? '停止执行' : '连续执行'
+      this.is_disabled = !this.is_disabled
+    },
+    init(){
+      this.miss_page_num = 0
+      this.miss_page_rate = 0
+      this.page_algorithm = 'FIFO算法'
+      this.frame = [{num: null, list: []}, {num: null, list: []}, {num: null, list: []}, {num: null, list: []},]
+      this.table_data = []
+      this.s_exec_name = '连续执行'
+      this.is_disabled = false
+      this.next_address = Math.floor(Math.random() * 320)
+      this.page_data = []
+      this.page_queue = []
+    },
+    //返回应该放在哪个frame里
+    FIFO(){
+      if(this.page_queue.length < 4){
+        this.page_queue.push(this.page_queue.length)
+        let out_page = this.frame[this.page_queue.length - 1].num
+        return [this.page_queue.length - 1, out_page];
+      }
+      else{
+        let frame_num = this.page_queue[0]
+        let out_page = this.frame[frame_num].num
+        this.page_queue.shift()
+        this.page_queue.push(frame_num)
+        return [frame_num, out_page]
+      }
+    },
+    exec(){
+      // alert(this.page_data[0])
+      if(this.table_data.length < 320) {
+        let page_num = Math.floor(this.next_address / 10)
+        let is_find = false
 
+        for(let i = 0;i < this.frame.length; i++){
+          if(page_num === this.frame[i].num){
+            is_find = true
+            break
+          }
+        }
+
+        if(is_find === false){
+          this.miss_page_num ++
+          this.miss_page_rate = Math.floor(this.miss_page_num * 100 / (this.table_data.length + 1))
+          if(this.page_algorithm ==='FIFO算法'){
+            let fifo = this.FIFO()
+            this.frame[fifo[0]].num = page_num
+            this.frame[fifo[0]].list = this.page_data[page_num]
+            let out_page = fifo[1] == null? '': fifo[1]
+            this.table_data.unshift({
+              order: this.table_data.length, address: this.next_address, loss_page: 'Yes', out_page: out_page, in_page: page_num
+            })
+          }
+        }
+        else{
+          this.table_data.unshift({
+            order: this.table_data.length, address: this.next_address, loss_page: 'No', out_page: '', in_page: page_num
+          })
+        }
+
+        //产生下一条指令地址
+        let rand = Math.random()
+        //顺序执行
+        if (rand < 0.5) {
+          this.next_address++
+          this.next_address %= 320
+        }
+        //25%的概率向后跳
+        else if(rand < 0.75){
+          let dx = Math.floor(Math.random() * 160)
+          this.next_address = (this.next_address + dx) % 320
+        }
+        //25%的概率向前跳
+        else{
+          let dx = -Math.floor(Math.random() * 160)
+          this.next_address = (this.next_address - dx + 320) % 320
+        }
+      }
     }
+
+  },
+  created() {
+    //初始化页表
+    for(let i = 0; i < 32; i++){
+      let arr = []
+      for(let j = i*10; j<(i+1)*10; j++ )
+        arr.push(j)
+      this.page_data.push(arr)
+    }
+    this.next_address = Math.floor(Math.random() * 320)
   },
   mounted() {
-    setInterval(() => {
-      this.counter++
-    }, 1000)
+    // setInterval(() => {
+    //   this.counter++
+    // }, 1000)
   }
 }
 </script>
@@ -204,8 +295,8 @@ export default {
   font-size: 1.17em;
   margin-block-start: 1em;
   margin-block-end: 1em;
-  margin-inline-start: 0px;
-  margin-inline-end: 0px;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
   font-weight: bold;
 }
 
