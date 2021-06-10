@@ -54,7 +54,7 @@
         <el-row :gutter="20">
           <el-col :span="6"><div class="grid-content bg-purple">
             <div class="common-layout">
-              <el-container class="el-card is-always-shadow box-card" :style="hh_style[0]">
+              <el-container class="el-card is-always-shadow box-card" :style="frame_style[0]">
                 <el-header class="el-card__header">
                   <p>第{{frame[0].num == null? 'None': frame[0].num}}页</p>
                 </el-header>
@@ -67,7 +67,7 @@
           </div></el-col>
           <el-col :span="6"><div class="grid-content bg-purple">
             <div class="common-layout">
-              <el-container class="el-card is-always-shadow box-card" :style="hh_style[1]">
+              <el-container class="el-card is-always-shadow box-card" :style="frame_style[1]">
                 <el-header class="el-card__header">
                   <p>第{{frame[1].num == null? 'None': frame[1].num}}页</p>
                 </el-header>
@@ -80,7 +80,7 @@
           </div></el-col>
           <el-col :span="6"><div class="grid-content bg-purple">
             <div class="common-layout">
-              <el-container class="el-card is-always-shadow box-card" :style="hh_style[2]">
+              <el-container class="el-card is-always-shadow box-card" :style="frame_style[2]">
                 <el-header class="el-card__header">
                   <p>第{{frame[2].num == null? 'None': frame[2].num}}页</p>
                 </el-header>
@@ -93,7 +93,7 @@
           </div></el-col>
           <el-col :span="6"><div class="grid-content bg-purple">
             <div class="common-layout">
-              <el-container class="el-card is-always-shadow box-card" :style="hh_style[3]">
+              <el-container class="el-card is-always-shadow box-card" :style="frame_style[3]">
                 <el-header class="el-card__header">
                   <p>第{{frame[3].num == null? 'None': frame[3].num}}页</p>
                 </el-header>
@@ -174,7 +174,7 @@ export default {
       fifo_queue: [],
       lru_queue: [0, 0, 0, 0],
       interval: '',
-      hh_style: ['','','',''],
+      frame_style: ['','','',''],
       order_style: [],
       current_row: null
     };
@@ -212,7 +212,7 @@ export default {
       this.pre_address = null
       this.fifo_queue = []
       this.lru_queue = [0, 0, 0, 0]
-      this.hh_style = ['','','','']
+      this.frame_style = ['','','','']
       this.current_row = null
       for(let i = 0; i < 320; i++)
         this.order_style.push('')
