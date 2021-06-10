@@ -171,7 +171,7 @@ export default {
       page_data: [],
       next_address: null,
       pre_address: null,
-      fifo_queue: [],
+      fifo_queue: [0, 1, 2, 3],
       lru_queue: [0, 0, 0, 0],
       interval: '',
       frame_style: ['','','',''],
@@ -196,7 +196,7 @@ export default {
       this.s_exec_name = this.s_exec_name === '连续执行' ? '停止执行' : '连续执行'
       this.is_disabled = !this.is_disabled
       if(this.is_disabled === true)
-        this.interval = setInterval(this.exec, 500)
+        this.interval = setInterval(this.exec, 100)
       else
         clearInterval(this.interval)
     },
@@ -210,7 +210,7 @@ export default {
       this.is_disabled = false
       this.next_address = Math.floor(Math.random() * 320)
       this.pre_address = null
-      this.fifo_queue = []
+      this.fifo_queue = [0, 1, 2, 3]
       this.lru_queue = [0, 0, 0, 0]
       this.frame_style = ['','','','']
       this.current_row = null
@@ -219,20 +219,12 @@ export default {
     },
     //返回应该放在哪个frame里以及换出页
     FIFO(){
-      if(this.fifo_queue.length < 4){
-        this.fifo_queue.push(this.fifo_queue.length)
-        //同时更新lru
-        this.lru_queue[this.fifo_queue.length - 1] = new Date().getTime()
-        return [this.fifo_queue.length - 1, this.frame[this.fifo_queue.length - 1].num];
-      }
-      else{
-        let frame_num = this.fifo_queue[0]
-        this.fifo_queue.shift()
-        this.fifo_queue.push(frame_num)
-        //同时更新lru
-        this.lru_queue[frame_num] = new Date().getTime()
-        return [frame_num, this.frame[frame_num].num]
-      }
+      let frame_num = this.fifo_queue[0]
+      this.fifo_queue.shift()
+      this.fifo_queue.push(frame_num)
+      //同时更新lru
+      this.lru_queue[frame_num] = new Date().getTime()
+      return [frame_num, this.frame[frame_num].num]
     },
     LRU(){
       let frame_num = 0
@@ -242,9 +234,8 @@ export default {
       }
       this.lru_queue[frame_num] = new Date().getTime()
       //同时更新fifo
+      this.fifo_queue.splice(this.fifo_queue.indexOf(frame_num), 1)
       this.fifo_queue.push(frame_num)
-      if(this.fifo_queue.length > 4)
-        this.fifo_queue.shift()
       return [frame_num, this.frame[frame_num].num]
     },
     //执行一次
