@@ -295,20 +295,15 @@ export default {
       this.pre_address = this.next_address
       let rand = Math.random()
       //顺序执行
-      if (rand < 0.5) {
-        this.next_address++
-        this.next_address %= 320
-      }
+      if (rand < 0.5)
+        this.next_address = (this.next_address + 1) % 320
+      let dx = Math.floor(Math.random() * 160)
       //25%的概率向后跳
-      else if (rand < 0.75) {
-        let dx = Math.floor(Math.random() * 160)
+      if (rand < 0.75 && rand >= 0.5)
         this.next_address = (this.next_address + dx) % 320
-      }
       //25%的概率向前跳
-      else {
-        let dx = Math.floor(Math.random() * 160)
+      if (rand >= 0.75)
         this.next_address = (this.next_address - dx + 320) % 320
-      }
     },
     //设置table当前行
     setCurrent() {
