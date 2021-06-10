@@ -54,6 +54,8 @@
 >
 > 学号：1952560
 
+![](https://github.com/AnJT/IMG/blob/main/memory.png?raw=true)
+
 ### 方案
 
 - #### 先进先出置换算法（FIFO）
