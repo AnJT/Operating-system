@@ -171,7 +171,7 @@ export default {
       page_data: [],
       next_address: null,
       pre_address: null,
-      page_queue: [],
+      fifo_queue: [],
       lru_queue: [0, 0, 0, 0],
       interval: '',
       hh_style: ['','','',''],
@@ -200,6 +200,7 @@ export default {
       else
         clearInterval(this.interval)
     },
+    //复位
     init(){
       this.miss_page_num = 0
       this.miss_page_rate = 0
@@ -209,46 +210,44 @@ export default {
       this.is_disabled = false
       this.next_address = Math.floor(Math.random() * 320)
       this.pre_address = null
-      this.page_queue = []
+      this.fifo_queue = []
       this.lru_queue = [0, 0, 0, 0]
       this.hh_style = ['','','','']
       this.current_row = null
       for(let i = 0; i < 320; i++)
         this.order_style.push('')
     },
-    //返回应该放在哪个frame里
+    //返回应该放在哪个frame里以及换出页
     FIFO(){
-      if(this.page_queue.length < 4){
-        this.page_queue.push(this.page_queue.length)
-        let out_page = this.frame[this.page_queue.length - 1].num
-        this.lru_queue[this.page_queue.length - 1] = new Date().getTime()
-        return [this.page_queue.length - 1, out_page];
+      if(this.fifo_queue.length < 4){
+        this.fifo_queue.push(this.fifo_queue.length)
+        //同时更新lru
+        this.lru_queue[this.fifo_queue.length - 1] = new Date().getTime()
+        return [this.fifo_queue.length - 1, this.frame[this.fifo_queue.length - 1].num];
       }
       else{
-        let frame_num = this.page_queue[0]
-        let out_page = this.frame[frame_num].num
-        this.page_queue.shift()
-        this.page_queue.push(frame_num)
+        let frame_num = this.fifo_queue[0]
+        this.fifo_queue.shift()
+        this.fifo_queue.push(frame_num)
+        //同时更新lru
         this.lru_queue[frame_num] = new Date().getTime()
-        return [frame_num, out_page]
+        return [frame_num, this.frame[frame_num].num]
       }
     },
     LRU(){
       let frame_num = 0
-      let min_time = this.lru_queue[0]
       for(let i = 1; i < this.lru_queue.length; i++){
-        if(this.lru_queue[i] < min_time){
+        if(this.lru_queue[i] < this.lru_queue[frame_num])
           frame_num = i
-          min_time = this.lru_queue[i]
-        }
       }
-      this.page_queue.push(frame_num)
-      if(this.page_queue.length > 4)
-        this.page_queue.shift()
       this.lru_queue[frame_num] = new Date().getTime()
-      let out_page = this.frame[frame_num].num
-      return [frame_num, out_page]
+      //同时更新fifo
+      this.fifo_queue.push(frame_num)
+      if(this.fifo_queue.length > 4)
+        this.fifo_queue.shift()
+      return [frame_num, this.frame[frame_num].num]
     },
+    //执行一次
     exec() {
       if (this.table_data.length === 320) {
         this.s_exec_name = '连续执行'
@@ -256,9 +255,12 @@ export default {
         clearInterval(this.interval)
       }
       else {
-        this.hh_style = ['','','','']
+        //恢复上一条指令的样式
+        this.frame_style = ['','','','']
         this.order_style[this.pre_address] = ''
+
         let page_num = Math.floor(this.next_address / 10)
+        //用于判断指令是否在内存中
         let is_find = false
 
         for (let i = 0; i < this.frame.length; i++) {
@@ -277,7 +279,7 @@ export default {
             result = this.FIFO()
           else
             result = this.LRU()
-          this.hh_style[result[0]] = {background: 'cornflowerblue'}
+          this.frame_style[result[0]] = {background: 'cornflowerblue'}
           this.frame[result[0]].num = page_num
           this.frame[result[0]].list = this.page_data[page_num]
           let out_page = result[1] == null ? '' : result[1]
@@ -294,26 +296,30 @@ export default {
           })
         }
         this.setCurrent()
-        this.pre_address = this.next_address
-        //产生下一条指令地址
-        let rand = Math.random()
-        //顺序执行
-        if (rand < 0.5) {
-          this.next_address++
-          this.next_address %= 320
-        }
-        //25%的概率向后跳
-        else if (rand < 0.75) {
-          let dx = Math.floor(Math.random() * 160)
-          this.next_address = (this.next_address + dx) % 320
-        }
-        //25%的概率向前跳
-        else {
-          let dx = Math.floor(Math.random() * 160)
-          this.next_address = (this.next_address - dx + 320) % 320
-        }
+        this.getNextAddress()
       }
     },
+    //产生下一条指令地址
+    getNextAddress() {
+      this.pre_address = this.next_address
+      let rand = Math.random()
+      //顺序执行
+      if (rand < 0.5) {
+        this.next_address++
+        this.next_address %= 320
+      }
+      //25%的概率向后跳
+      else if (rand < 0.75) {
+        let dx = Math.floor(Math.random() * 160)
+        this.next_address = (this.next_address + dx) % 320
+      }
+      //25%的概率向前跳
+      else {
+        let dx = Math.floor(Math.random() * 160)
+        this.next_address = (this.next_address - dx + 320) % 320
+      }
+    },
+    //设置table当前行
     setCurrent() {
       this.$refs.table.setCurrentRow(this.table_data[0]);
     }
@@ -322,10 +328,11 @@ export default {
     //初始化页表
     for(let i = 0; i < 32; i++){
       let arr = []
-      for(let j = i*10; j<(i+1)*10; j++ )
+      for(let j = i * 10; j < (i + 1) * 10; j++ )
         arr.push(j)
       this.page_data.push(arr)
     }
+    //产生第一条指令
     this.next_address = Math.floor(Math.random() * 320)
     this.lru_queue = [0, 0, 0, 0]
     for(let i = 0; i < 320; i++)
@@ -335,7 +342,6 @@ export default {
 </script>
 
 <style>
-
 .transition-box {
   width: 100px;
   height: 20px;
@@ -345,6 +351,7 @@ export default {
   margin: 10px auto;
   border-radius: 4px;
 }
+
 .hh_p {
   display: block;
   font-size: 1.17em;
@@ -354,5 +361,4 @@ export default {
   margin-inline-end: 0;
   font-weight: bold;
 }
-
 </style>
