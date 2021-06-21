@@ -99,7 +99,7 @@ namespace FileManageSystem {
 
         // 删除文件
         public void deleteFile(string name) {
-            Node currentNode = this.search(this.root, name, FCB.FOLDER);
+            Node currentNode = this.search(this.root, name, FCB.TXTFILE);
             Node parentNode = currentNode.parent;
             if (parentNode.child == currentNode)
                 parentNode.child = currentNode.brother;

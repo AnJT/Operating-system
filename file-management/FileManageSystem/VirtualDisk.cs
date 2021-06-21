@@ -72,6 +72,43 @@ namespace FileManageSystem {
             return false;
         }
 
+        // 读取文件内容
+        public string getFileContent(FCB fcb) {
+            if (fcb.start == EMPTY)
+                return "";
+            else {
+                string content = "";
+                int start = fcb.start;
+                int blocks = this.getBlockSize(fcb.size);
+
+                int count = 0;
+                while(start < this.blockNum) {
+                    if (count == blocks)
+                        break;
+                    content += memory[start];
+                    start = this.bitMap[start];
+                    count++;
+                }
+                return content;
+            }
+        }
+
+        // 删除文件夹内存
+        public void deleteFolderContent(Category.Node node) {
+            if (node == null)
+                return;
+            if (node.child == null)
+                return;
+            Category.Node temp = node.child;
+            while (temp != null) {
+                if (temp.fcb.type == FCB.TXTFILE)
+                    this.deleteFileContent(temp.fcb.start, temp.fcb.size);
+                else
+                    this.deleteFolderContent(temp);
+                temp = temp.brother;
+            }
+        }
+
         // 删除文件内容
         public void deleteFileContent(int start, int size) {
             int blocks = this.getBlockSize(size);

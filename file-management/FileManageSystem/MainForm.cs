@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -20,12 +21,14 @@ namespace FileManageSystem {
 
         public string nowPath;
         public string change;
+
         public MainForm() {
             this.StartPosition = FormStartPosition.CenterScreen;
-            FCB root = new FCB("root", FCB.FOLDER, "", 1);
+            FCB root = new FCB("./", FCB.FOLDER, "", 1);
             this.rootNode = new Category.Node(root);
             this.currentRoot = rootNode;
             this.category.root = rootNode;
+            this.nowPath = rootNode.fcb.fileName;
 
             // 恢复文件管理系统
             readFormDisk(); // 读取目录信息文件
@@ -33,22 +36,114 @@ namespace FileManageSystem {
             readmyDisk(); // 读取虚拟磁盘文件
 
             InitializeComponent();
-            this.initListView(this.currentRoot);
+
+            this.listView1.SmallImageList = this.imageList1;
+            this.treeView.ImageList = this.imageList1;
+
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.init(this.rootNode);
+            this.initTreeView(this.rootNode);
+            this.contextMenuStrip1.Closed += new ToolStripDropDownClosedEventHandler(contextMenuStrip1_Closed);
+            this.listView1.ContextMenuStrip = this.contextMenuStrip2;
         }
 
+        public void contextMenuStrip1_Closed(object sender, ToolStripDropDownClosedEventArgs e) {
+            this.listView1.ContextMenuStrip = contextMenuStrip2;
+        }
+
+
+        public void init(Category.Node node) {
+            this.nowPath = node.fcb.fileName;
+            this.textBoxSearch.Text = this.nowPath;
+            this.currentRoot = node;
+
+            this.labelDiskSize.Text = "当前磁盘大小: " + myDisk.size.ToString() + "B";
+            this.labelBlockSize.Text = "当前盘块大小: " + myDisk.blockSize.ToString() + "B";
+
+            if (this.nowPath == "./")
+                this.buttonBack.Enabled = false;
+            else
+                this.buttonBack.Enabled = true;
+
+            this.initListView(node);
+        }
+        public void initListView(Category.Node node) {
+            this.listView1.BeginUpdate();
+            this.listView1.Items.Clear();
+            if (node == null) {
+                this.listView1.EndUpdate();
+                return;
+            }
+            if (node.child == null) {
+                this.listView1.EndUpdate();
+                return;
+            }
+            Category.Node temp = node.child;
+            while (temp != null) {
+                ListViewItem li = new ListViewItem();
+                string[] path = temp.fcb.fileName.Split('/');
+                li.ImageIndex = temp.fcb.type;
+                li.Text = path[path.Length - 2] + ((temp.fcb.type == FCB.FOLDER) ? "" :".txt");
+                li.SubItems.Add(temp.fcb.lastModify);
+                li.SubItems.Add(temp.fcb.type == FCB.FOLDER ? "Folder" : "File");
+                li.SubItems.Add(temp.fcb.type == FCB.FOLDER ? "-" : (temp.fcb.size.ToString() + "B"));
+                this.listView1.Items.Add(li);
+                temp = temp.brother;
+            }
+            this.listView1.EndUpdate();
+        }
+        public void initTreeView(Category.Node node) {
+            this.treeView.Nodes.Clear();
+            this.treeView.BeginUpdate();
+            TreeNode tn = new TreeNode();
+            tn.Name = node.fcb.fileName;
+            tn.Text = node.fcb.fileName;
+            tn.Tag = FCB.FOLDER;
+            tn.ImageIndex = FCB.FOLDER;
+            tn.SelectedImageIndex = FCB.FOLDER;
+            treeView.Nodes.Add(tn);
+            this.initTreeNode(tn, node.child);
+            this.treeView.ExpandAll();
+            this.treeView.EndUpdate();
+        }
+        public void initTreeNode(TreeNode parentTn, Category.Node node) {
+            if (node == null)
+                return;
+            TreeNode tn = new TreeNode();
+            if (node.fcb.type == FCB.FOLDER) {
+                string[] name = node.fcb.fileName.Split('/');
+                tn.Name = name[name.Length - 2];
+                tn.Text = name[name.Length - 2];
+                tn.Tag = FCB.FOLDER;
+                tn.ImageIndex = FCB.FOLDER;
+                tn.SelectedImageIndex = FCB.FOLDER;
+            }
+            else {
+                string[] name = node.fcb.fileName.Split('/');
+                tn.Name = name[name.Length - 2] + ".txt";
+                tn.Text = name[name.Length - 2] + ".txt";
+                tn.Tag = FCB.TXTFILE;
+                tn.ImageIndex = FCB.TXTFILE;
+                tn.SelectedImageIndex = FCB.TXTFILE;
+            }
+            parentTn.Nodes.Add(tn);
+            this.initTreeNode(parentTn, node.brother);
+            this.initTreeNode(tn, node.child);
+        }
         private void buttonBack_Click(object sender, EventArgs e) {
-            this.nowPath = this.nowPath.Replace("> " + currentRoot.fcb.fileName, "");
             this.currentRoot = this.currentRoot.parent;
-            this.initListView(this.currentRoot);
+            this.init(this.currentRoot);
         }
 
-        private void buttonCreateFolder_Click(object sender, EventArgs e) {
-            string str = Interaction.InputBox("请输入文件夹的名称", "创建文件夹", "", 100, 100);
+        // 创建文件夹
+        public void buttonCreateFolder_Click(object sender, EventArgs e) {
+            string str = Interaction.InputBox("请输入文件夹的名称", "创建文件夹", "", -1, -1);
             if (str != "") {
-                if (category.noSameName(this.currentRoot, str, FCB.FOLDER)) {
+                if (category.noSameName(this.currentRoot, this.nowPath + str + "/", FCB.FOLDER)) {
                     string time = DateTime.Now.ToLocalTime().ToString();
-                    this.category.createFile(this.currentRoot.fcb.fileName, new FCB(str, FCB.FOLDER, time, 0));  //文件夹加入到目录中
+                    this.category.createFile(this.currentRoot.fcb.fileName, new FCB(this.nowPath + str + "/", FCB.FOLDER, time, 0));  //文件夹加入到目录中
                     this.initListView(this.currentRoot);
+                    this.initTreeView(this.rootNode);
                 }
                 else {
                     MessageBox.Show("已存在名为" + str + "的文件夹，创建失败！");
@@ -56,13 +151,15 @@ namespace FileManageSystem {
             }
         }
 
-        private void buttonCreateFile_Click(object sender, EventArgs e) {
-            string str = Interaction.InputBox("请输入文件的名称", "创建文本文件", "", 100, 100);
+        // 创建文本文件
+        public void buttonCreateFile_Click(object sender, EventArgs e) {
+            string str = Interaction.InputBox("请输入文件的名称", "创建文本文件", "", -1, -1);
             if (str != "") {
-                if (this.category.noSameName(this.currentRoot, str, FCB.TXTFILE)) {
+                if (this.category.noSameName(this.currentRoot, this.nowPath + str + "/", FCB.TXTFILE)) {
                     string time = DateTime.Now.ToLocalTime().ToString();    //获取时间信息
-                    this.category.createFile(this.currentRoot.fcb.fileName, new FCB(str, FCB.TXTFILE, time, 0));  //文件加入到目录中
+                    this.category.createFile(this.currentRoot.fcb.fileName, new FCB(this.nowPath + str + "/", FCB.TXTFILE, time, 0));  //文件加入到目录中
                     this.initListView(this.currentRoot);
+                    this.initTreeView(this.rootNode);
                 }
                 else {
                     MessageBox.Show("已存在名为" + str + ".txt的文件，创建失败！");
@@ -81,39 +178,78 @@ namespace FileManageSystem {
                     myDisk.remain = myDisk.blockNum;
                 }
                 MessageBox.Show("磁盘已清空。");
-                //fileFormInit(rootNode);
 
                 this.nowPath = "";
                 this.textBoxSearch.Text = "";
                 this.category.root = this.rootNode;
                 updateLog();        //清空所有日志文件
                 this.currentRoot = this.rootNode;
-                this.initListView(this.currentRoot);
+                this.init(this.currentRoot);
+                this.initTreeView(this.rootNode);
             }
         }
 
-        public void initListView(Category.Node node) {
-            this.listView1.BeginUpdate();
-            this.listView1.Items.Clear();
-            if (node == null) {
-                this.listView1.EndUpdate();
-                return;
+        private void listView1_DoubleClick(object sender, EventArgs e) {
+            if (this.listView1.SelectedItems.Count > 0) {
+                if (this.listView1.SelectedItems[0].SubItems[2].Text.Replace(".txt", "") == "File") {
+                    FileRWForm file = new FileRWForm(this.nowPath + this.listView1.SelectedItems[0].Text.Replace(".txt", "") + "/", this);
+                    file.Show();
+                }
+                else if (this.listView1.SelectedItems[0].SubItems[2].Text.Replace(".txt", "") == "Folder") {
+                    this.currentRoot = this.category.search(this.rootNode, this.nowPath + this.listView1.SelectedItems[0].Text.Replace(".txt", "") + "/", FCB.FOLDER);
+                    this.init(this.currentRoot);
+                }
             }
-            if (node.child == null) {
-                this.listView1.EndUpdate();
-                return;
+        }
+
+        private void listView1_MouseClick(object sender, MouseEventArgs e) {
+            if (e.Button == MouseButtons.Right) {
+                this.listView1.ContextMenuStrip = null;
+                this.contextMenuStrip1.Show(this.listView1, e.Location);
             }
-            Category.Node temp = node.child;
-            while(temp != null) {
-                ListViewItem li = new ListViewItem();
-                li.Text = temp.fcb.fileName;
-                li.SubItems.Add(temp.fcb.lastModify);
-                li.SubItems.Add(temp.fcb.type == FCB.FOLDER ? "Filder" : "File");
-                li.SubItems.Add(temp.fcb.size.ToString() + "B");
-                this.listView1.Items.Add(li);
-                temp = temp.brother;
+        }
+
+        private void 删除ToolStripMenuItem_Click(object sender, EventArgs e) {
+            int type = this.listView1.SelectedItems[0].SubItems[2].Text.Replace(".txt", "") == "Folder" ? FCB.FOLDER : FCB.TXTFILE;
+            Category.Node deleteNode = this.category.search(this.rootNode, this.nowPath + this.listView1.SelectedItems[0].Text.Replace(".txt", "") + "/", type);
+            FCB deleteFcb = deleteNode.fcb;
+            if (type == FCB.TXTFILE) {
+                this.myDisk.deleteFileContent(deleteFcb.start, deleteFcb.size);
+                this.category.deleteFile(this.nowPath + this.listView1.SelectedItems[0].Text.Replace(".txt", "") + "/");
             }
-            this.listView1.EndUpdate();
+            else {
+                this.myDisk.deleteFolderContent(deleteNode);
+                this.category.deleteFolder(this.nowPath + this.listView1.SelectedItems[0].Text.Replace(".txt", "") + "/");
+            }
+            this.initListView(this.currentRoot);
+            this.initTreeView(this.rootNode);
+        }
+
+        private void 新建文件夹ToolStripMenuItem_Click(object sender, EventArgs e) {
+            this.buttonCreateFolder_Click(sender, e);
+        }
+
+        private void 新建文本文件ToolStripMenuItem_Click(object sender, EventArgs e) {
+            this.buttonCreateFile_Click(sender, e);
+        }
+
+        private void 重命名ToolStripMenuItem_Click(object sender, EventArgs e) {
+            if (this.listView1.SelectedItems.Count > 0) {
+                int type = this.listView1.SelectedItems[0].SubItems[2].Text.Replace(".txt", "") == "Folder" ? FCB.FOLDER : FCB.TXTFILE;
+                Category.Node node = this.category.search(this.rootNode, this.nowPath + this.listView1.SelectedItems[0].Text.Replace(".txt", "") + "/", type);
+                string str = Interaction.InputBox("请输入新名称", "重命名", "", -1, -1);
+                if (str != "") {
+                    if (category.noSameName(this.currentRoot, this.nowPath + str + "/", type)) {
+                        string time = DateTime.Now.ToLocalTime().ToString();
+                        node.fcb.fileName = this.nowPath + str + "/";
+                        this.initListView(this.currentRoot);
+                        this.initTreeView(this.rootNode);
+                    }
+                    else {
+                        MessageBox.Show(String.Format("已存在名为" + str + "的{0}，重命名失败！", type == FCB.TXTFILE ? "文件" : "文件夹"));
+                    }
+                }
+            }
         }
 
         // CategoryInfo.txt中信息格式 
@@ -176,7 +312,7 @@ namespace FileManageSystem {
         }
 
         public void writeCategory(Category.Node node) {
-            Category.Node parentNode = category.currentRootName(this.rootNode, node.fcb.fileName, node.fcb.type);
+            Category.Node parentNode = node.parent;
             string InfoPath = Application.StartupPath + "\\CategoryInfo.txt";
             StreamWriter writer = File.AppendText(InfoPath);
 
@@ -219,7 +355,6 @@ namespace FileManageSystem {
         // 虚拟磁盘文件
         public void readmyDisk() {
             string path = Application.StartupPath + "\\MyDiskInfo.txt";
-            Console.WriteLine(path);
             if (File.Exists(path)) {
                 StreamReader reader = new StreamReader(path);
                 for (int i = 0; i < myDisk.blockNum; i++) {
@@ -275,6 +410,28 @@ namespace FileManageSystem {
 
             writeBitMap();
             writeMyDisk();
+        }
+
+        private void treeView_DoubleClick(object sender, EventArgs e) {
+            TreeNode temp = this.treeView.SelectedNode;
+            ArrayList al = new ArrayList();
+            while (temp != null) {
+                al.Add(temp.Text);
+                temp = temp.Parent;
+            }
+            string name = "./";
+            for(int i = al.Count-2 ;i >= 0; i--) {
+                name += al[i].ToString() + "/";
+            }
+            name = name.Replace(".txt", "");
+            if(this.treeView.SelectedNode.Tag.ToString() == FCB.FOLDER.ToString()) {
+                this.currentRoot = this.category.search(this.rootNode, name, FCB.FOLDER);
+                this.init(this.currentRoot);
+            }
+            else {
+                FileRWForm file = new FileRWForm(name, this);
+                file.Show();
+            }
         }
     }
 }

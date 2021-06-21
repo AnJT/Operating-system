@@ -9,7 +9,7 @@ namespace FileManageSystem {
         public const int TXTFILE = 0; // 文本文件标识符
         public const int FOLDER = 1; // 文件夹标识符
 
-        public string fileName; // 文件名
+        public string fileName; // 文件名（以绝对路径作为文件名）
         public int start; // 文件在内存中初始存放的位置
         public int type; // 文件类型 => TXTFILE/ FOLDER
         public string lastModify; // 最近修改时间
