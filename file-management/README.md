@@ -44,6 +44,20 @@
 - #### 位图、FAT表
 
   磁盘空闲空间广利在位图的基础上进行改造，将存放磁盘上文件位置信息的FAT表与传统的位图进行结合，磁盘空闲的位置使用`EMPTY = -1`标识，放有文件的盘块存放文件所在的下一个盘块的文职，文件存放结束的盘块位置使用`END = -2`标识。
+  
+- #### 基本功能流程图
+
+  - 创建文件
+
+    <img src="https://github.com/AnJT/IMG/blob/main/%E6%B5%811.png?raw=true" width=300px>
+
+  - 修改文件内容
+
+    <img src="https://github.com/AnJT/IMG/blob/main/%E6%B5%812.png?raw=true" width=400>
+
+  - 删除文件
+
+    <img src="https://github.com/AnJT/IMG/blob/main/%E6%B5%813.png?raw=true" width=250>
 
 ## 四、项目环境
 
