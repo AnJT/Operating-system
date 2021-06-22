@@ -138,7 +138,9 @@ namespace FileManageSystem {
         // 创建文件夹
         public void buttonCreateFolder_Click(object sender, EventArgs e) {
             string str = Interaction.InputBox("请输入文件夹的名称", "创建文件夹", "", -1, -1);
-            if (str != "") {
+            if(str.Contains('/'))
+                MessageBox.Show("文件夹名称中不能包含'/'，创建失败！");
+            else if (str != "") {
                 if (category.noSameName(this.currentRoot, this.nowPath + str + "/", FCB.FOLDER)) {
                     string time = DateTime.Now.ToLocalTime().ToString();
                     this.category.createFile(this.currentRoot.fcb.fileName, new FCB(this.nowPath + str + "/", FCB.FOLDER, time, 0));  //文件夹加入到目录中
@@ -154,7 +156,9 @@ namespace FileManageSystem {
         // 创建文本文件
         public void buttonCreateFile_Click(object sender, EventArgs e) {
             string str = Interaction.InputBox("请输入文件的名称", "创建文本文件", "", -1, -1);
-            if (str != "") {
+            if (str.Contains('/'))
+                MessageBox.Show("文本文件名称中不能包含'/'，创建失败！");
+            else if (str != "") {
                 if (this.category.noSameName(this.currentRoot, this.nowPath + str + "/", FCB.TXTFILE)) {
                     string time = DateTime.Now.ToLocalTime().ToString();    //获取时间信息
                     this.category.createFile(this.currentRoot.fcb.fileName, new FCB(this.nowPath + str + "/", FCB.TXTFILE, time, 0));  //文件加入到目录中
@@ -172,11 +176,11 @@ namespace FileManageSystem {
             DialogResult result = MessageBox.Show("确定清空磁盘？", "提示信息", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
             if (result == DialogResult.OK) {
                 this.category.freeCategory(ref this.category.root);
-                for (int i = 0; i < myDisk.blockSize; i++) {
+                for (int i = 0; i < myDisk.blockNum; i++) {
                     myDisk.memory[i] = "";
                     myDisk.bitMap[i] = -1;
-                    myDisk.remain = myDisk.blockNum;
                 }
+                myDisk.remain = myDisk.blockNum;
                 MessageBox.Show("磁盘已清空。");
 
                 this.nowPath = "";
@@ -238,7 +242,9 @@ namespace FileManageSystem {
                 int type = this.listView1.SelectedItems[0].SubItems[2].Text.Replace(".txt", "") == "Folder" ? FCB.FOLDER : FCB.TXTFILE;
                 Category.Node node = this.category.search(this.rootNode, this.nowPath + this.listView1.SelectedItems[0].Text.Replace(".txt", "") + "/", type);
                 string str = Interaction.InputBox("请输入新名称", "重命名", "", -1, -1);
-                if (str != "") {
+                if (str.Contains('/'))
+                    MessageBox.Show(String.Format("{0}名称中不能包含'/'，创建失败！", type == FCB.TXTFILE ? "文本文件" : "文件夹"));
+                else if (str != "") {
                     if (category.noSameName(this.currentRoot, this.nowPath + str + "/", type)) {
                         string time = DateTime.Now.ToLocalTime().ToString();
                         node.fcb.fileName = this.nowPath + str + "/";
