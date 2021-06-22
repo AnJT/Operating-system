@@ -119,6 +119,7 @@ namespace FileManageSystem {
             this.textBoxSearch.Location = new System.Drawing.Point(283, 32);
             this.textBoxSearch.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.textBoxSearch.Name = "textBoxSearch";
+            this.textBoxSearch.ReadOnly = true;
             this.textBoxSearch.Size = new System.Drawing.Size(596, 25);
             this.textBoxSearch.TabIndex = 6;
             // 

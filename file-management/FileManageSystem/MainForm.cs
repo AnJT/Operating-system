@@ -45,6 +45,7 @@ namespace FileManageSystem {
             this.initTreeView(this.rootNode);
             this.contextMenuStrip1.Closed += new ToolStripDropDownClosedEventHandler(contextMenuStrip1_Closed);
             this.listView1.ContextMenuStrip = this.contextMenuStrip2;
+
         }
 
         public void contextMenuStrip1_Closed(object sender, ToolStripDropDownClosedEventArgs e) {
